@@ -50,9 +50,15 @@ APK появится в `app/build/outputs/apk/debug/`.
 ```
 /app                       # Android-приложение (Kotlin, Jetpack Compose)
   /src/main/java/com/podzemnayapochta
+    /domain                # Модели и use-case-ы (Letter, GameState, DeliverLetter, ...)
+    /data                  # DTO, мапперы, репозитории (загрузка JSON-контента)
+    /engine                # Мини-движок: Scene, HitArea, HitTester
+    /presentation          # Экраны (меню, карта) и навигация на Compose Canvas
     /ui/theme              # Тема и палитра (см. docs/style.md)
     MainActivity.kt        # Точка входа
+  /src/main/assets/content # JSON-контент игры (game.json)
   /src/main/res            # Ресурсы (иконки, строки, цвета)
+  /src/test                # Unit-тесты (domain, data, engine)
 /docs                      # Документация проекта
 /gradle                    # Version catalog (libs.versions.toml) и wrapper
 /.github/workflows         # CI/CD (GitHub Actions)
