@@ -1,0 +1,48 @@
+site_name: Подземная Почта
+site_description: Документация point-and-click игры «Подземная Почта»
+site_author: Команда «Подземная Почта»
+repo_url: https://github.com/derandomize/point-and-click-mobile
+repo_name: derandomize/point-and-click-mobile
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: ru
+  palette:
+    # Тёмная тема под сеттинг подземного города (см. docs/style.md).
+    - scheme: slate
+      primary: brown
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Светлая тема
+    - scheme: default
+      primary: brown
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Тёмная тема
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - navigation.sections
+    - toc.integrate
+    - content.code.copy
+    - content.action.edit
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Главная: index.md
+  - Идея: idea.md
+  - Архитектура: architecture.md
+  - Стилистика: style.md
+  - Инструментарий и процесс: tooling.md
