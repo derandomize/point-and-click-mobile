@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Палитра из docs/style.md: тёплые тени + акценты тёплого света. -->
+    <color name="underground_shadow">#2B1B17</color>     <!-- тёмно-коричневый -->
+    <color name="underground_burgundy">#4A1E2B</color>   <!-- бордовый -->
+    <color name="underground_violet">#2E2540</color>     <!-- фиолетово-синий -->
+    <color name="lantern_amber">#E8A24A</color>          <!-- янтарный -->
+    <color name="lantern_honey">#F2C879</color>          <!-- медовый -->
+    <color name="lantern_teal">#5FBFB0</color>           <!-- бирюзовый огонёк -->
+</resources>
