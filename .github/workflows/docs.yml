@@ -1,5 +1,9 @@
 name: Docs
 
+# ВАЖНО: один раз включите GitHub Pages в репозитории:
+#   Settings → Pages → Build and deployment → Source: "GitHub Actions".
+# Иначе шаг deploy упадёт с ошибкой "Creating Pages deployment failed (404)".
+
 on:
   push:
     branches: [main]
@@ -39,6 +43,13 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r docs/requirements.txt
+
+      - name: Configure Pages
+        if: github.ref == 'refs/heads/main'
+        uses: actions/configure-pages@v5
+        with:
+          # Пытается включить GitHub Pages автоматически (нужно право на репозиторий).
+          enablement: true
 
       - name: Build site
         run: mkdocs build --strict
