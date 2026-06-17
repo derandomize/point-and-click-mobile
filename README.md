@@ -7,10 +7,21 @@
 **Платформа:** Android · **Язык:** Kotlin · **Движок:** не используется (свой мини-рендер на Canvas).
 
 ## Документация
+
+Собирается с помощью [MkDocs Material](https://squidfunk.github.io/mkdocs-material/)
+и публикуется на GitHub Pages (workflow `.github/workflows/docs.yml`).
+
 - [Идея](docs/idea.md)
 - [Архитектура](docs/architecture.md)
 - [Стилистика и промпты для графики](docs/style.md)
 - [Инструментарий и процесс](docs/tooling.md)
+
+Локальный предпросмотр:
+
+```bash
+pip install -r docs/requirements.txt
+mkdocs serve   # http://127.0.0.1:8000
+```
 
 ## Сборка
 

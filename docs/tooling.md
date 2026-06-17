@@ -22,6 +22,12 @@
 - Unit-тесты: JUnit5 + kotlin.test + Turbine для Flow.
 - CI: GitHub Actions — build + lint + tests на каждый PR.
 
+## Документация
+- Исходники — Markdown в `docs/`.
+- Сборка сайта — [MkDocs Material](https://squidfunk.github.io/mkdocs-material/) (`mkdocs.yml`).
+- Публикация на GitHub Pages автоматически из `main` (workflow `.github/workflows/docs.yml`).
+- На PR документация собирается в строгом режиме (`mkdocs build --strict`) — битые ссылки ломают сборку.
+
 ## Контент
 - Тексты, диалоги, квесты — JSON в `assets/`.
 - Графика — PNG (можно генерить нейросетью по промптам из `docs/style.md`).

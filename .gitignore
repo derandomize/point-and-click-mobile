@@ -14,3 +14,7 @@ build/
 *.jks
 *.keystore
 release/
+
+# MkDocs
+/site/
+.venv/
