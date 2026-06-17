@@ -1,5 +1,7 @@
 # Подземная Почта
 
+[![CI](https://github.com/derandomize/point-and-click-mobile/actions/workflows/ci.yml/badge.svg)](https://github.com/derandomize/point-and-click-mobile/actions/workflows/ci.yml)
+
 Мобильная point-and-click игра для Android. Игрок — почтальон в подземном городе. Разносит письма, общается с жителями, постепенно раскрывает тайну заброшенного лифта на поверхность и в финале решает её судьбу.
 
 **Платформа:** Android · **Язык:** Kotlin · **Движок:** не используется (свой мини-рендер на Canvas).
@@ -53,7 +55,28 @@ APK появится в `app/build/outputs/apk/debug/`.
   /src/main/res            # Ресурсы (иконки, строки, цвета)
 /docs                      # Документация проекта
 /gradle                    # Version catalog (libs.versions.toml) и wrapper
+/.github/workflows         # CI/CD (GitHub Actions)
 ```
+
+## CI/CD
+
+GitHub Actions, два workflow:
+
+- **CI** (`.github/workflows/ci.yml`) — на каждый push/PR в `main` и `dev`:
+  - `lint` — ktlint + detekt,
+  - `test` — unit-тесты,
+  - `build` — сборка debug APK (артефакт `app-debug`).
+- **Release** (`.github/workflows/release.yml`) — по тегу `v*`:
+  собирает release APK и публикует GitHub Release с приложенным APK.
+
+## Процесс разработки (git-flow lite)
+
+`main` (стабильная) ← `dev` ← feature-ветки `feat/<name>`.
+
+1. Создать ветку от `dev`: `git checkout dev && git checkout -b feat/my-feature`.
+2. Закоммитить изменения, запушить, открыть PR в `dev`.
+3. PR должен пройти CI и получить минимум 1 апрув.
+4. Релиз — тег `v0.x` на `main`.
 
 ## Команда
 - Алексей Токарев
