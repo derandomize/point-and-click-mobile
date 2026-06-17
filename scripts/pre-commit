@@ -1,0 +1,25 @@
+#!/bin/sh
+# Pre-commit hook для «Подземной Почты».
+# Запускает ktlint и detekt только если есть staged .kt/.kts файлы.
+# Установка: ./scripts/setup-hooks.sh
+
+STAGED_KT=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.kts?$')
+
+if [ -z "$STAGED_KT" ]; then
+    exit 0
+fi
+
+echo "[pre-commit] Запускаю ktlintCheck..."
+if ! ./gradlew --quiet ktlintCheck; then
+    echo "[pre-commit] ktlint нашёл ошибки. Попробуйте: ./gradlew ktlintFormat"
+    exit 1
+fi
+
+echo "[pre-commit] Запускаю detekt..."
+if ! ./gradlew --quiet detekt; then
+    echo "[pre-commit] detekt нашёл проблемы. См. отчёт build/reports/detekt/."
+    exit 1
+fi
+
+echo "[pre-commit] Проверки пройдены."
+exit 0
