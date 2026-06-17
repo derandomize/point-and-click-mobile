@@ -39,7 +39,8 @@ style:
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
     # Compose-код насыщен размерами/координатами — не считаем их «магией».
-    excludes: ['**/ui/**', '**/presentation/**', '**/engine/**']
+    # Тесты тоже свободно используют числовые литералы.
+    excludes: ['**/ui/**', '**/presentation/**', '**/engine/**', '**/test/**', '**/androidTest/**']
   MaxLineLength:
     active: true
     maxLineLength: 140
