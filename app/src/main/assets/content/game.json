@@ -1,0 +1,159 @@
+{
+  "startLocationId": "post-office",
+  "locations": [
+    {
+      "id": "post-office",
+      "title": "Почтовая станция",
+      "description": "Стена латунных труб, лампа с зелёным стеклянным абажуром, штампы на столе.",
+      "backgroundAsset": "art/post-office/bg.png",
+      "connectedLocationIds": ["market", "clock-house"],
+      "npcIds": ["npc-postmaster"]
+    },
+    {
+      "id": "market",
+      "title": "Рынок грибов",
+      "description": "Светящиеся грибные прилавки, висячие фонари, пар от котлов.",
+      "backgroundAsset": "art/market/bg.png",
+      "connectedLocationIds": ["post-office", "tavern"],
+      "npcIds": ["npc-mushroom-seller"]
+    },
+    {
+      "id": "clock-house",
+      "title": "Дом часовщика",
+      "description": "Заваленная часами и шестерёнками мастерская, тёплая настольная лампа.",
+      "backgroundAsset": "art/clock-house/bg.png",
+      "connectedLocationIds": ["post-office", "old-elevator"],
+      "npcIds": ["npc-clockmaker"]
+    },
+    {
+      "id": "tavern",
+      "title": "Таверна",
+      "description": "Деревянные кабинки, очаг, кружки, скрипка на стене.",
+      "backgroundAsset": "art/tavern/bg.png",
+      "connectedLocationIds": ["market", "archive"],
+      "npcIds": ["npc-bartender"]
+    },
+    {
+      "id": "archive",
+      "title": "Архив",
+      "description": "Бесконечная тусклая библиотека со свитками, лестницами и пылью в лучах света.",
+      "backgroundAsset": "art/archive/bg.png",
+      "connectedLocationIds": ["tavern"],
+      "npcIds": ["npc-archivist"]
+    },
+    {
+      "id": "old-elevator",
+      "title": "Старый лифт",
+      "description": "Огромная ржавая шахта лифта, оборванные тросы, выцветшие плакаты, одинокая лампа.",
+      "backgroundAsset": "art/old-elevator/bg.png",
+      "connectedLocationIds": ["clock-house"],
+      "npcIds": []
+    }
+  ],
+  "npcs": [
+    {
+      "id": "npc-postmaster",
+      "name": "Начальник почты",
+      "portraitAsset": "art/npc/postmaster.png",
+      "locationId": "post-office",
+      "dialogueRootId": "dlg-postmaster-1"
+    },
+    {
+      "id": "npc-mushroom-seller",
+      "name": "Грибная торговка",
+      "portraitAsset": "art/npc/mushroom-seller.png",
+      "locationId": "market",
+      "dialogueRootId": "dlg-mushroom-1"
+    },
+    {
+      "id": "npc-clockmaker",
+      "name": "Часовщик",
+      "portraitAsset": "art/npc/clockmaker.png",
+      "locationId": "clock-house",
+      "dialogueRootId": "dlg-clockmaker-1"
+    },
+    {
+      "id": "npc-bartender",
+      "name": "Трактирщик",
+      "portraitAsset": "art/npc/bartender.png",
+      "locationId": "tavern",
+      "dialogueRootId": null
+    },
+    {
+      "id": "npc-archivist",
+      "name": "Архивариус",
+      "portraitAsset": "art/npc/archivist.png",
+      "locationId": "archive",
+      "dialogueRootId": "dlg-archivist-1"
+    }
+  ],
+  "letters": [
+    {
+      "id": "letter-clockmaker",
+      "title": "Письмо тому, кто слышит время",
+      "body": "Дорогой друг, моя кукушка снова замолчала. Только ты умеешь вернуть ей голос.",
+      "recipientNpcId": "npc-clockmaker",
+      "hints": ["Адресат чинит часы", "Живёт рядом со старым лифтом"],
+      "reward": 10
+    },
+    {
+      "id": "letter-archivist",
+      "title": "Запрос из глубин",
+      "body": "Прошу найти старую карту шахты лифта. За пыльными полками, где пахнет историей.",
+      "recipientNpcId": "npc-archivist",
+      "hints": ["Адресат хранит документы", "Его место — среди свитков и пыли"],
+      "reward": 15
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "dlg-postmaster-1",
+      "speakerNpcId": "npc-postmaster",
+      "text": "Новенький? Вот первое письмо. Разберёшься, кому его нести по подсказкам.",
+      "choices": [
+        {
+          "text": "Беру письмо.",
+          "targetNodeId": "dlg-postmaster-2",
+          "effects": [{ "flag": "got_first_letter", "value": true }]
+        },
+        { "text": "Позже.", "targetNodeId": null }
+      ]
+    },
+    {
+      "id": "dlg-postmaster-2",
+      "speakerNpcId": "npc-postmaster",
+      "text": "Удачи на маршруте, почтальон.",
+      "choices": []
+    },
+    {
+      "id": "dlg-clockmaker-1",
+      "speakerNpcId": "npc-clockmaker",
+      "text": "Тиканье… ты принёс мне весть?",
+      "choices": [
+        { "text": "Вот письмо для вас.", "targetNodeId": null }
+      ]
+    },
+    {
+      "id": "dlg-mushroom-1",
+      "speakerNpcId": "npc-mushroom-seller",
+      "text": "Свежие светящиеся грибы! Бери, не пожалеешь.",
+      "choices": [
+        { "text": "Спасибо, в другой раз.", "targetNodeId": null }
+      ]
+    },
+    {
+      "id": "dlg-archivist-1",
+      "speakerNpcId": "npc-archivist",
+      "text": "Тише… здесь спит история. Что ищешь?",
+      "choices": [
+        { "text": "У меня письмо для вас.", "targetNodeId": null },
+        {
+          "text": "Что вы знаете о лифте наверх?",
+          "targetNodeId": null,
+          "condition": { "flag": "got_first_letter", "expectedValue": true },
+          "effects": [{ "flag": "knows_elevator_rumor", "value": true }]
+        }
+      ]
+    }
+  ]
+}
