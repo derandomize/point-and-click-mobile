@@ -27,6 +27,22 @@
 
 APK появится в `app/build/outputs/apk/debug/`.
 
+## Качество кода
+
+В проекте настроены **ktlint** (форматирование) и **detekt** (статический анализ).
+
+```bash
+./gradlew ktlintCheck      # проверка стиля
+./gradlew ktlintFormat     # авто-исправление
+./gradlew detekt           # статический анализ
+```
+
+Установить pre-commit хук (запускает ktlint + detekt перед коммитом):
+
+```bash
+./scripts/setup-hooks.sh
+```
+
 ## Структура проекта
 
 ```

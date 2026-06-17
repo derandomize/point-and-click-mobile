@@ -1,0 +1,75 @@
+# Detekt configuration for Подземная Почта
+# Расширяет дефолтную конфигурацию (buildUponDefaultConfig = true).
+
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+complexity:
+  LongMethod:
+    active: true
+    threshold: 60
+  LongParameterList:
+    active: true
+    functionThreshold: 7
+    constructorThreshold: 8
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 20
+    thresholdInClasses: 15
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 15
+
+style:
+  UnusedPrivateMember:
+    active: true
+    # @Preview/@Composable-функции вызываются инструментами, а не кодом.
+    ignoreAnnotated: ['Preview', 'Composable']
+  MagicNumber:
+    active: true
+    ignoreNumbers: ['-1', '0', '1', '2']
+    ignoreHashCodeFunction: true
+    ignoreAnnotation: true
+    ignoreEnums: true
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    # Compose-код насыщен размерами/координатами — не считаем их «магией».
+    excludes: ['**/ui/**', '**/presentation/**', '**/engine/**']
+  MaxLineLength:
+    active: true
+    maxLineLength: 140
+  ReturnCount:
+    active: true
+    max: 4
+
+naming:
+  FunctionNaming:
+    active: true
+    # @Composable-функции пишутся с заглавной — разрешаем.
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    active: true
+    constantPattern: '[A-Z][A-Za-z0-9]*'
+
+comments:
+  active: true
+
+empty-blocks:
+  active: true
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: true
+  SwallowedException:
+    active: true
+
+performance:
+  active: true
+
+potential-bugs:
+  active: true
