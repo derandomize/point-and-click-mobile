@@ -23,6 +23,12 @@
 ## Поток управления
 `Input (tap) → ViewModel → UseCase → GameState update → State flow → UI redraw`.
 
+> **Реализация.** `GameViewModel` (Hilt) держит `StateFlow<GameUiState>`,
+> загружает контент через `ContentRepository`, инициализирует `GameState`
+> (первое письмо выдаётся на старте) и обновляет его через use-case-ы
+> (`MoveTo`, `DeliverLetter`, `QuestEngine`). Экраны подписываются на состояние
+> через `collectAsStateWithLifecycle`. DI собран в `di/AppModule`.
+
 ## Контент-пайплайн
 1. Сценарист пишет письма/диалоги в шаблонных JSON.
 2. Художник кладёт PNG в `assets/art/<location>/`.

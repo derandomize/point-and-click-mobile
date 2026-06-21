@@ -39,11 +39,12 @@ import com.podzemnayapochta.ui.theme.UndergroundShadow
 @Composable
 fun MapScreen(
     locations: List<MapLocation> = MapLocation.placeholderCity(),
+    currentLocationId: String? = null,
     onLocationSelected: (String) -> Unit = {},
 ) {
     val hitTester = remember { HitTester() }
     val textMeasurer = rememberTextMeasurer()
-    var selectedId by remember { mutableStateOf<String?>(null) }
+    var selectedId by remember(currentLocationId) { mutableStateOf(currentLocationId) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Canvas(
