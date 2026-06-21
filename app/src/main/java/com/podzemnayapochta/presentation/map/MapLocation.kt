@@ -11,6 +11,8 @@ data class MapLocation(
     val x: Float,
     val y: Float,
     val connectedIds: List<String> = emptyList(),
+    /** Открыта ли локация для перехода (иначе на карте показана недоступной). */
+    val unlocked: Boolean = true,
 ) {
     /** Квадратная hit-область вокруг центра узла. */
     fun toHitArea(half: Float = HIT_HALF): HitArea =

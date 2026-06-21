@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,8 +18,9 @@ import com.podzemnayapochta.presentation.game.GameViewModel
 import com.podzemnayapochta.presentation.hud.GameHud
 
 /**
- * Связывает [GameViewModel] с [MapScreen]: подсвечивает текущую локацию,
- * а тап по локации открывает её экран (переход выполняет вызывающий слой).
+ * Связывает [GameViewModel] с [MapScreen]: карта собирается из контента игры
+ * через [MapBuilder], подсвечивает текущую локацию и гейтит переходы по
+ * открытым локациям (см. ROADMAP, PR 4). Сам переход выполняет вызывающий слой.
  */
 @Composable
 fun MapRoute(
@@ -26,6 +28,7 @@ fun MapRoute(
     onLocationSelected: (String) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val mapBuilder = remember { MapBuilder() }
 
     when (val s = state) {
         is GameUiState.Loading ->
@@ -42,10 +45,14 @@ fun MapRoute(
                 )
             }
 
-        is GameUiState.Ready ->
+        is GameUiState.Ready -> {
+            val locations =
+                remember(s.content, s.gameState.unlockedLocationIds) {
+                    mapBuilder.build(s.content, s.gameState.unlockedLocationIds)
+                }
             Box(Modifier.fillMaxSize()) {
                 MapScreen(
-                    locations = MapLocation.placeholderCity(),
+                    locations = locations,
                     currentLocationId = s.gameState.currentLocationId,
                     onLocationSelected = onLocationSelected,
                 )
@@ -59,5 +66,6 @@ fun MapRoute(
                             .padding(bottom = 24.dp),
                 )
             }
+        }
     }
 }
