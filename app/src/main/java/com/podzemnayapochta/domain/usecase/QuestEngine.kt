@@ -27,6 +27,15 @@ class QuestEngine {
             it.status == LetterStatus.RECEIVED || it.status == LetterStatus.IN_TRANSIT
         }
 
+    /**
+     * Письма в «сумке» почтальона — все, что игрок уже видел (не [LetterStatus.LOCKED]).
+     * Недоставленные идут раньше доставленных, чтобы активные квесты были сверху.
+     */
+    fun knownLetters(state: GameState): List<Letter> =
+        state.letters.values
+            .filter { it.status != LetterStatus.LOCKED }
+            .sortedBy { it.isDelivered }
+
     private fun transition(
         state: GameState,
         letterId: String,

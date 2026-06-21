@@ -65,9 +65,6 @@ class GameViewModel
                 }
             }
 
-        /** Получить письмо (LOCKED → RECEIVED). */
-        fun receiveLetter(letterId: String) = updateReady { _, state -> questEngine.receiveLetter(state, letterId) }
-
         /** Доставить письмо NPC. Возвращает результат для UI-обратной связи. */
         fun deliver(
             letterId: String,
@@ -129,6 +126,18 @@ class GameViewModel
         fun endDialogue() {
             val ready = _uiState.value as? GameUiState.Ready ?: return
             _uiState.update { ready.copy(dialogue = null) }
+        }
+
+        /** Открыть/закрыть «сумку» почтальона со списком писем. */
+        fun setBagOpen(open: Boolean) {
+            val ready = _uiState.value as? GameUiState.Ready ?: return
+            _uiState.update { ready.copy(isBagOpen = open) }
+        }
+
+        /** Письма в сумке игрока (см. [QuestEngine.knownLetters]). */
+        fun bagLetters(): List<Letter> {
+            val ready = _uiState.value as? GameUiState.Ready ?: return emptyList()
+            return questEngine.knownLetters(ready.gameState)
         }
 
         /** Вручить письмо NPC, с которым идёт диалог. */

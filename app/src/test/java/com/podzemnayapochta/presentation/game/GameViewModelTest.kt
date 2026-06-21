@@ -26,6 +26,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -194,6 +195,30 @@ class GameViewModelTest {
             vm.endDialogue()
 
             assertNull((vm.uiState.value as GameUiState.Ready).dialogue)
+        }
+
+    @Test
+    fun `setBagOpen переключает флаг сумки`() =
+        runTest(dispatcher) {
+            val vm = viewModel()
+            advanceUntilIdle()
+
+            vm.setBagOpen(true)
+            assertTrue((vm.uiState.value as GameUiState.Ready).isBagOpen)
+
+            vm.setBagOpen(false)
+            assertFalse((vm.uiState.value as GameUiState.Ready).isBagOpen)
+        }
+
+    @Test
+    fun `bagLetters содержит выданное на старте письмо`() =
+        runTest(dispatcher) {
+            val vm = viewModel()
+            advanceUntilIdle()
+
+            val ids = vm.bagLetters().map { it.id }
+
+            assertEquals(listOf("l1"), ids)
         }
 
     @Test

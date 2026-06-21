@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +44,7 @@ fun LocationScreen(
     scene: Scene,
     onNpcTapped: (String) -> Unit = {},
     onExitTapped: (String) -> Unit = {},
+    onOpenBag: () -> Unit = {},
 ) {
     val hitTester = remember { HitTester() }
     val textMeasurer = rememberTextMeasurer()
@@ -79,6 +81,16 @@ fun LocationScreen(
                     .align(Alignment.TopStart)
                     .padding(16.dp),
         )
+
+        Button(
+            onClick = onOpenBag,
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp),
+        ) {
+            Text("Сумка")
+        }
     }
 }
 
