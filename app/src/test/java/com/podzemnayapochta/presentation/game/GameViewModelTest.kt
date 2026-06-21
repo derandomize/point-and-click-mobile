@@ -195,4 +195,45 @@ class GameViewModelTest {
 
             assertNull((vm.uiState.value as GameUiState.Ready).dialogue)
         }
+
+    @Test
+    fun `при диалоге с адресатом письмо доступно к вручению`() =
+        runTest(dispatcher) {
+            val vm = viewModel()
+            advanceUntilIdle()
+
+            vm.startDialogue("npc-pm")
+
+            val dialogue = (vm.uiState.value as GameUiState.Ready).dialogue!!
+            assertEquals("l1", dialogue.deliverableLetter?.id)
+        }
+
+    @Test
+    fun `deliverToCurrentNpc доставляет письмо и начисляет награду`() =
+        runTest(dispatcher) {
+            val vm = viewModel()
+            advanceUntilIdle()
+            vm.startDialogue("npc-pm")
+
+            vm.deliverToCurrentNpc()
+
+            val state = assertIs<GameUiState.Ready>(vm.uiState.value)
+            assertEquals(LetterStatus.DELIVERED, state.gameState.letter("l1")?.status)
+            assertEquals(10, state.gameState.score)
+            assertNull(state.dialogue?.deliverableLetter)
+            assertTrue(state.deliveryFeedback?.contains("доставлено") == true)
+        }
+
+    @Test
+    fun `consumeDeliveryFeedback сбрасывает сообщение`() =
+        runTest(dispatcher) {
+            val vm = viewModel()
+            advanceUntilIdle()
+            vm.startDialogue("npc-pm")
+            vm.deliverToCurrentNpc()
+
+            vm.consumeDeliveryFeedback()
+
+            assertNull((vm.uiState.value as GameUiState.Ready).deliveryFeedback)
+        }
 }
