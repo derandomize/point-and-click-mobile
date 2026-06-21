@@ -21,6 +21,7 @@ import com.podzemnayapochta.engine.SceneBuilder
 import com.podzemnayapochta.presentation.dialogue.DialogueOverlay
 import com.podzemnayapochta.presentation.game.GameUiState
 import com.podzemnayapochta.presentation.game.GameViewModel
+import com.podzemnayapochta.presentation.hud.GameHud
 import com.podzemnayapochta.presentation.letters.LetterBagOverlay
 
 /**
@@ -96,27 +97,40 @@ private fun ReadyLocation(
         return
     }
 
-    LocationScreen(
-        scene = scene,
-        onNpcTapped = viewModel::startDialogue,
-        onExitTapped = { targetId ->
-            viewModel.moveTo(targetId)
-            onNavigateToLocation(targetId)
-        },
-        onOpenBag = { viewModel.setBagOpen(true) },
-    )
-    ready.dialogue?.let { dialogue ->
-        DialogueOverlay(
-            dialogue = dialogue,
-            onChoice = viewModel::chooseDialogueOption,
-            onDeliverLetter = viewModel::deliverToCurrentNpc,
-            onDismiss = viewModel::endDialogue,
+    Box(Modifier.fillMaxSize()) {
+        LocationScreen(
+            scene = scene,
+            onNpcTapped = viewModel::startDialogue,
+            onExitTapped = { targetId ->
+                viewModel.moveTo(targetId)
+                onNavigateToLocation(targetId)
+            },
+            onOpenBag = { viewModel.setBagOpen(true) },
         )
-    }
-    if (ready.isBagOpen) {
-        LetterBagOverlay(
-            letters = viewModel.bagLetters(),
-            onClose = { viewModel.setBagOpen(false) },
-        )
+        ready.dialogue?.let { dialogue ->
+            DialogueOverlay(
+                dialogue = dialogue,
+                onChoice = viewModel::chooseDialogueOption,
+                onDeliverLetter = viewModel::deliverToCurrentNpc,
+                onDismiss = viewModel::endDialogue,
+            )
+        }
+        if (ready.isBagOpen) {
+            LetterBagOverlay(
+                letters = viewModel.bagLetters(),
+                onClose = { viewModel.setBagOpen(false) },
+            )
+        }
+        if (ready.dialogue == null && !ready.isBagOpen) {
+            GameHud(
+                score = ready.gameState.score,
+                delivered = ready.gameState.deliveredCount,
+                total = ready.content.letters.size,
+                modifier =
+                    Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 12.dp),
+            )
+        }
     }
 }

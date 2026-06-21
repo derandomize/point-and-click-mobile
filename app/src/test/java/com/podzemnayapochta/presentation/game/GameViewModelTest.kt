@@ -117,6 +117,19 @@ class GameViewModelTest {
         }
 
     @Test
+    fun `moveTo помечает полученное письмо как в пути`() =
+        runTest(dispatcher) {
+            val vm = viewModel()
+            advanceUntilIdle()
+
+            vm.moveTo("market")
+            advanceUntilIdle()
+
+            val state = assertIs<GameUiState.Ready>(vm.uiState.value)
+            assertEquals(LetterStatus.IN_TRANSIT, state.gameState.letter("l1")?.status)
+        }
+
+    @Test
     fun `deliver верному адресату начисляет награду`() =
         runTest(dispatcher) {
             val vm = viewModel()

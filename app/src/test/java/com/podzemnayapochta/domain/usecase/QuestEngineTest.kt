@@ -73,4 +73,23 @@ class QuestEngineTest {
 
         assertEquals(listOf("c", "d", "b"), known)
     }
+
+    @Test
+    fun `markCarriedInTransit переводит только RECEIVED в IN_TRANSIT`() {
+        val state =
+            TestFixtures.state(
+                letters =
+                    listOf(
+                        TestFixtures.letter(id = "a", status = LetterStatus.LOCKED),
+                        TestFixtures.letter(id = "b", status = LetterStatus.RECEIVED),
+                        TestFixtures.letter(id = "c", status = LetterStatus.DELIVERED),
+                    ),
+            )
+
+        val moved = quests.markCarriedInTransit(state)
+
+        assertEquals(LetterStatus.LOCKED, moved.letter("a")?.status)
+        assertEquals(LetterStatus.IN_TRANSIT, moved.letter("b")?.status)
+        assertEquals(LetterStatus.DELIVERED, moved.letter("c")?.status)
+    }
 }
