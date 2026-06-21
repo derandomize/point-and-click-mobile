@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.podzemnayapochta.presentation.game.GameUiState
 import com.podzemnayapochta.presentation.game.GameViewModel
+import com.podzemnayapochta.presentation.hud.GameHud
 
 /**
  * Связывает [GameViewModel] с [MapScreen]: подсвечивает текущую локацию,
@@ -42,10 +43,21 @@ fun MapRoute(
             }
 
         is GameUiState.Ready ->
-            MapScreen(
-                locations = MapLocation.placeholderCity(),
-                currentLocationId = s.gameState.currentLocationId,
-                onLocationSelected = onLocationSelected,
-            )
+            Box(Modifier.fillMaxSize()) {
+                MapScreen(
+                    locations = MapLocation.placeholderCity(),
+                    currentLocationId = s.gameState.currentLocationId,
+                    onLocationSelected = onLocationSelected,
+                )
+                GameHud(
+                    score = s.gameState.score,
+                    delivered = s.gameState.deliveredCount,
+                    total = s.content.letters.size,
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 24.dp),
+                )
+            }
     }
 }

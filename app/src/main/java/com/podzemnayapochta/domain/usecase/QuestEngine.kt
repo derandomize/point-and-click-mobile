@@ -21,6 +21,15 @@ class QuestEngine {
         letterId: String,
     ): GameState = transition(state, letterId, from = LetterStatus.RECEIVED, to = LetterStatus.IN_TRANSIT)
 
+    /**
+     * Помечает все полученные письма как «в пути»: игрок вышел на маршрут
+     * (см. ROADMAP, PR 2 — RECEIVED → IN_TRANSIT при первом перемещении).
+     */
+    fun markCarriedInTransit(state: GameState): GameState =
+        state.letters.values
+            .filter { it.status == LetterStatus.RECEIVED }
+            .fold(state) { acc, letter -> markInTransit(acc, letter.id) }
+
     /** Письма, которые можно сейчас доставить (получены или в пути). */
     fun deliverableLetters(state: GameState): List<Letter> =
         state.letters.values.filter {

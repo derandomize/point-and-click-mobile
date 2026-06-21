@@ -60,7 +60,8 @@ class GameViewModel
             updateReady { content, state ->
                 val from = content.location(state.currentLocationId) ?: return@updateReady state
                 when (val result = moveTo(state, from, targetLocationId)) {
-                    is MoveResult.Success -> result.state
+                    // Выходя на маршрут, полученные письма становятся «в пути».
+                    is MoveResult.Success -> questEngine.markCarriedInTransit(result.state)
                     else -> state
                 }
             }
