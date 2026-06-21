@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -32,15 +33,18 @@ import com.podzemnayapochta.ui.theme.PodzemnayaPochtaTheme
 fun DialogueOverlay(
     dialogue: DialogueUiState,
     onChoice: (DialogueChoice) -> Unit,
+    onDeliverLetter: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val terminal = dialogue.availableChoices.isEmpty()
+    val hasLetter = dialogue.deliverableLetter != null
+    // Закрыть тапом по фону можно, только когда нет ни вариантов, ни письма к вручению.
+    val dismissable = dialogue.availableChoices.isEmpty() && !hasLetter
     Column(
         modifier =
             Modifier
                 .fillMaxSize()
                 .background(Color(0xCC1A0F0C))
-                .clickable(enabled = terminal, onClick = onDismiss)
+                .clickable(enabled = dismissable, onClick = onDismiss)
                 .padding(24.dp),
         verticalArrangement = Arrangement.Bottom,
     ) {
@@ -49,44 +53,68 @@ fun DialogueOverlay(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                dialogue.speakerName?.let { name ->
-                    Text(
-                        text = name,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-                Text(
-                    text = dialogue.node.text,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
-                )
+            DialogueCardContent(
+                dialogue = dialogue,
+                hasLetter = hasLetter,
+                onChoice = onChoice,
+                onDeliverLetter = onDeliverLetter,
+            )
+        }
+    }
+}
 
-                if (terminal) {
-                    Text(
-                        text = "Нажмите, чтобы закрыть",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontStyle = FontStyle.Italic,
-                    )
-                } else {
-                    HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
-                    dialogue.availableChoices.forEach { choice ->
-                        Text(
-                            text = "• ${choice.text}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.secondary,
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onChoice(choice) }
-                                    .padding(vertical = 10.dp),
-                        )
-                    }
-                }
+@Composable
+private fun DialogueCardContent(
+    dialogue: DialogueUiState,
+    hasLetter: Boolean,
+    onChoice: (DialogueChoice) -> Unit,
+    onDeliverLetter: () -> Unit,
+) {
+    Column(modifier = Modifier.padding(20.dp)) {
+        dialogue.speakerName?.let { name ->
+            Text(
+                text = name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+        Text(
+            text = dialogue.node.text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(top = 8.dp, bottom = 16.dp),
+        )
+
+        if (hasLetter) {
+            Button(
+                onClick = onDeliverLetter,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Вручить письмо «${dialogue.deliverableLetter?.title}»")
             }
+        }
+
+        if (dialogue.availableChoices.isNotEmpty()) {
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            dialogue.availableChoices.forEach { choice ->
+                Text(
+                    text = "• ${choice.text}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { onChoice(choice) }
+                            .padding(vertical = 10.dp),
+                )
+            }
+        } else if (!hasLetter) {
+            Text(
+                text = "Нажмите, чтобы закрыть",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontStyle = FontStyle.Italic,
+            )
         }
     }
 }
@@ -113,6 +141,7 @@ private fun DialogueOverlayPreview() {
                         ),
                 ),
             onChoice = {},
+            onDeliverLetter = {},
             onDismiss = {},
         )
     }

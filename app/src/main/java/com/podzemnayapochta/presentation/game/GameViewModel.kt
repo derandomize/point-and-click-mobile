@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.podzemnayapochta.domain.model.DialogueChoice
 import com.podzemnayapochta.domain.model.GameState
+import com.podzemnayapochta.domain.model.Letter
+import com.podzemnayapochta.domain.model.LetterStatus
 import com.podzemnayapochta.domain.repository.ContentRepository
 import com.podzemnayapochta.domain.repository.GameContent
 import com.podzemnayapochta.domain.usecase.DeliverLetter
@@ -93,6 +95,7 @@ class GameViewModel
                             node = node,
                             speakerName = npc.name,
                             availableChoices = dialogueEngine.availableChoices(node.choices, ready.gameState),
+                            deliverableLetter = deliverableLetterFor(ready.gameState, npcId),
                         ),
                 )
             }
@@ -126,6 +129,60 @@ class GameViewModel
         fun endDialogue() {
             val ready = _uiState.value as? GameUiState.Ready ?: return
             _uiState.update { ready.copy(dialogue = null) }
+        }
+
+        /** Вручить письмо NPC, с которым идёт диалог. */
+        fun deliverToCurrentNpc() {
+            val ready = _uiState.value as? GameUiState.Ready ?: return
+            val dialogue = ready.dialogue ?: return
+            val letter = dialogue.deliverableLetter ?: return
+
+            when (val result = deliverLetter(ready.gameState, letter.id, dialogue.npcId)) {
+                is DeliverResult.Success -> {
+                    val nextLetterUnlocked = unlockNextLetter(result.state, letter.id)
+                    _uiState.update {
+                        ready.copy(
+                            gameState = nextLetterUnlocked,
+                            dialogue = dialogue.copy(deliverableLetter = null),
+                            deliveryFeedback = "Письмо доставлено! +${result.reward}",
+                        )
+                    }
+                }
+
+                else ->
+                    _uiState.update {
+                        ready.copy(deliveryFeedback = "Это письмо не для ${dialogue.speakerName ?: "него"}")
+                    }
+            }
+        }
+
+        /** Сбросить одноразовое сообщение о доставке (после показа в UI). */
+        fun consumeDeliveryFeedback() {
+            val ready = _uiState.value as? GameUiState.Ready ?: return
+            if (ready.deliveryFeedback != null) {
+                _uiState.update { ready.copy(deliveryFeedback = null) }
+            }
+        }
+
+        private fun deliverableLetterFor(
+            state: GameState,
+            npcId: String,
+        ): Letter? =
+            state.letters.values.firstOrNull { letter ->
+                letter.recipientNpcId == npcId &&
+                    (letter.status == LetterStatus.RECEIVED || letter.status == LetterStatus.IN_TRANSIT)
+            }
+
+        /** После доставки выдаёт следующее по списку письмо игроку (LOCKED → RECEIVED). */
+        private fun unlockNextLetter(
+            state: GameState,
+            deliveredLetterId: String,
+        ): GameState {
+            val nextLockedId =
+                state.letters.values
+                    .firstOrNull { it.id != deliveredLetterId && it.status == LetterStatus.LOCKED }
+                    ?.id ?: return state
+            return questEngine.receiveLetter(state, nextLockedId)
         }
 
         private fun initialState(content: GameContent): GameState =

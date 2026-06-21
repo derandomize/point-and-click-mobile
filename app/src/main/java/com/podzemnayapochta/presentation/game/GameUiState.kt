@@ -17,5 +17,6 @@ sealed interface GameUiState {
         val content: GameContent,
         val gameState: GameState,
         val dialogue: DialogueUiState? = null,
+        val deliveryFeedback: String? = null,
     ) : GameUiState
 }
