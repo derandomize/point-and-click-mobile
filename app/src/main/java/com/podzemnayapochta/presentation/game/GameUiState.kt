@@ -16,5 +16,6 @@ sealed interface GameUiState {
     data class Ready(
         val content: GameContent,
         val gameState: GameState,
+        val dialogue: DialogueUiState? = null,
     ) : GameUiState
 }

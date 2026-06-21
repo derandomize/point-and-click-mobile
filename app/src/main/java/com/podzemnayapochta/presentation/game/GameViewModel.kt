@@ -2,11 +2,13 @@ package com.podzemnayapochta.presentation.game
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.podzemnayapochta.domain.model.DialogueChoice
 import com.podzemnayapochta.domain.model.GameState
 import com.podzemnayapochta.domain.repository.ContentRepository
 import com.podzemnayapochta.domain.repository.GameContent
 import com.podzemnayapochta.domain.usecase.DeliverLetter
 import com.podzemnayapochta.domain.usecase.DeliverResult
+import com.podzemnayapochta.domain.usecase.DialogueEngine
 import com.podzemnayapochta.domain.usecase.MoveResult
 import com.podzemnayapochta.domain.usecase.MoveTo
 import com.podzemnayapochta.domain.usecase.QuestEngine
@@ -31,6 +33,7 @@ class GameViewModel
         private val moveTo: MoveTo,
         private val deliverLetter: DeliverLetter,
         private val questEngine: QuestEngine,
+        private val dialogueEngine: DialogueEngine,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow<GameUiState>(GameUiState.Loading)
         val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
@@ -71,9 +74,58 @@ class GameViewModel
             val ready = _uiState.value as? GameUiState.Ready ?: return DeliverResult.LetterNotFound
             val result = deliverLetter(ready.gameState, letterId, recipientNpcId)
             if (result is DeliverResult.Success) {
-                _uiState.update { GameUiState.Ready(ready.content, result.state) }
+                _uiState.update { ready.copy(gameState = result.state) }
             }
             return result
+        }
+
+        /** Начать диалог с NPC (тап по персонажу в локации). */
+        fun startDialogue(npcId: String) {
+            val ready = _uiState.value as? GameUiState.Ready ?: return
+            val npc = ready.content.npc(npcId) ?: return
+            val rootId = npc.dialogueRootId ?: return
+            val node = ready.content.dialogue(rootId) ?: return
+            _uiState.update {
+                ready.copy(
+                    dialogue =
+                        DialogueUiState(
+                            npcId = npcId,
+                            node = node,
+                            speakerName = npc.name,
+                            availableChoices = dialogueEngine.availableChoices(node.choices, ready.gameState),
+                        ),
+                )
+            }
+        }
+
+        /** Выбрать вариант ответа: применить эффекты и перейти к следующему узлу или завершить. */
+        fun chooseDialogueOption(choice: DialogueChoice) {
+            val ready = _uiState.value as? GameUiState.Ready ?: return
+            val dialogue = ready.dialogue ?: return
+
+            val newState = dialogueEngine.applyChoice(ready.gameState, choice)
+            val nextNode = choice.targetNodeId?.let { ready.content.dialogue(it) }
+
+            if (nextNode == null) {
+                _uiState.update { ready.copy(gameState = newState, dialogue = null) }
+                return
+            }
+            _uiState.update {
+                ready.copy(
+                    gameState = newState,
+                    dialogue =
+                        dialogue.copy(
+                            node = nextNode,
+                            availableChoices = dialogueEngine.availableChoices(nextNode.choices, newState),
+                        ),
+                )
+            }
+        }
+
+        /** Принудительно закрыть диалог. */
+        fun endDialogue() {
+            val ready = _uiState.value as? GameUiState.Ready ?: return
+            _uiState.update { ready.copy(dialogue = null) }
         }
 
         private fun initialState(content: GameContent): GameState =
@@ -94,6 +146,6 @@ class GameViewModel
         private inline fun updateReady(transform: (GameContent, GameState) -> GameState) {
             val ready = _uiState.value as? GameUiState.Ready ?: return
             val newState = transform(ready.content, ready.gameState)
-            _uiState.update { GameUiState.Ready(ready.content, newState) }
+            _uiState.update { ready.copy(gameState = newState) }
         }
     }

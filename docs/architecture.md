@@ -24,7 +24,7 @@
 > рисует сцену на Compose Canvas. `SceneBuilder` собирает `Scene` из `GameContent`:
 > NPC и выходы становятся `SceneObject` с нормализованными hit-областями.
 > Тап обрабатывается `HitTester`: по выходу — переход (`MoveTo`) и навигация,
-> по NPC — вход в диалог (UI диалога — в следующем PR).
+> по NPC — открывается диалог (оверлей `DialogueOverlay` поверх локации).
 
 ## Поток управления
 `Input (tap) → ViewModel → UseCase → GameState update → State flow → UI redraw`.

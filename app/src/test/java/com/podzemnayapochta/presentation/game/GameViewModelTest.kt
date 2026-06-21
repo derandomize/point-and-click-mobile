@@ -1,6 +1,8 @@
 package com.podzemnayapochta.presentation.game
 
 import app.cash.turbine.test
+import com.podzemnayapochta.domain.model.DialogueChoice
+import com.podzemnayapochta.domain.model.DialogueEffect
 import com.podzemnayapochta.domain.model.DialogueNode
 import com.podzemnayapochta.domain.model.Letter
 import com.podzemnayapochta.domain.model.LetterStatus
@@ -10,6 +12,7 @@ import com.podzemnayapochta.domain.repository.ContentRepository
 import com.podzemnayapochta.domain.repository.GameContent
 import com.podzemnayapochta.domain.usecase.DeliverLetter
 import com.podzemnayapochta.domain.usecase.DeliverResult
+import com.podzemnayapochta.domain.usecase.DialogueEngine
 import com.podzemnayapochta.domain.usecase.MoveTo
 import com.podzemnayapochta.domain.usecase.QuestEngine
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +27,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GameViewModelTest {
@@ -37,12 +42,29 @@ class GameViewModelTest {
                     Location("post-office", "Почта", "", "a.png", connectedLocationIds = listOf("market")),
                     Location("market", "Рынок", "", "b.png", connectedLocationIds = listOf("post-office")),
                 ),
-            npcs = listOf(Npc("npc-pm", "Начальник", "p.png", "post-office")),
+            npcs = listOf(Npc("npc-pm", "Начальник", "p.png", "post-office", dialogueRootId = "d1")),
             letters =
                 listOf(
                     Letter("l1", "Письмо", "Текст", recipientNpcId = "npc-pm", reward = 10),
                 ),
-            dialogues = emptyList<DialogueNode>(),
+            dialogues =
+                listOf(
+                    DialogueNode(
+                        id = "d1",
+                        speakerNpcId = "npc-pm",
+                        text = "Новенький?",
+                        choices =
+                            listOf(
+                                DialogueChoice(
+                                    text = "Беру письмо.",
+                                    targetNodeId = "d2",
+                                    effects = listOf(DialogueEffect("got_first_letter", true)),
+                                ),
+                                DialogueChoice(text = "Позже.", targetNodeId = null),
+                            ),
+                    ),
+                    DialogueNode(id = "d2", speakerNpcId = "npc-pm", text = "Удачи.", choices = emptyList()),
+                ),
         )
 
     private val repository =
@@ -56,6 +78,7 @@ class GameViewModelTest {
             moveTo = MoveTo(),
             deliverLetter = DeliverLetter(),
             questEngine = QuestEngine(),
+            dialogueEngine = DialogueEngine(),
         )
 
     @BeforeEach
@@ -116,5 +139,60 @@ class GameViewModelTest {
                 assertIs<GameUiState.Ready>(awaitItem())
                 cancelAndIgnoreRemainingEvents()
             }
+        }
+
+    @Test
+    fun `startDialogue открывает корневой узел NPC с доступными вариантами`() =
+        runTest(dispatcher) {
+            val vm = viewModel()
+            advanceUntilIdle()
+
+            vm.startDialogue("npc-pm")
+
+            val state = assertIs<GameUiState.Ready>(vm.uiState.value)
+            val dialogue = requireNotNull(state.dialogue)
+            assertEquals("d1", dialogue.node.id)
+            assertEquals("Начальник", dialogue.speakerName)
+            assertEquals(2, dialogue.availableChoices.size)
+        }
+
+    @Test
+    fun `выбор варианта применяет эффекты и переходит к следующему узлу`() =
+        runTest(dispatcher) {
+            val vm = viewModel()
+            advanceUntilIdle()
+            vm.startDialogue("npc-pm")
+
+            val first = (vm.uiState.value as GameUiState.Ready).dialogue!!.availableChoices.first()
+            vm.chooseDialogueOption(first)
+
+            val state = assertIs<GameUiState.Ready>(vm.uiState.value)
+            assertEquals("d2", state.dialogue?.node?.id)
+            assertTrue(state.gameState.flag("got_first_letter"))
+        }
+
+    @Test
+    fun `выбор варианта без цели завершает диалог`() =
+        runTest(dispatcher) {
+            val vm = viewModel()
+            advanceUntilIdle()
+            vm.startDialogue("npc-pm")
+
+            val close = (vm.uiState.value as GameUiState.Ready).dialogue!!.availableChoices.last()
+            vm.chooseDialogueOption(close)
+
+            assertNull((vm.uiState.value as GameUiState.Ready).dialogue)
+        }
+
+    @Test
+    fun `endDialogue закрывает активный диалог`() =
+        runTest(dispatcher) {
+            val vm = viewModel()
+            advanceUntilIdle()
+            vm.startDialogue("npc-pm")
+
+            vm.endDialogue()
+
+            assertNull((vm.uiState.value as GameUiState.Ready).dialogue)
         }
 }
