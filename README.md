@@ -79,19 +79,19 @@ APK появится в `app/build/outputs/apk/debug/`.
 
 GitHub Actions, два workflow:
 
-- **CI** (`.github/workflows/ci.yml`) — на каждый push/PR в `main` и `dev`:
+- **CI** (`.github/workflows/ci.yml`) — на каждый push/PR в `main`:
   - `lint` — ktlint + detekt,
   - `test` — unit-тесты,
   - `build` — сборка debug APK (артефакт `app-debug`).
 - **Release** (`.github/workflows/release.yml`) — по тегу `v*`:
   собирает release APK и публикует GitHub Release с приложенным APK.
 
-## Процесс разработки (git-flow lite)
+## Процесс разработки
 
-`main` (стабильная) ← `dev` ← feature-ветки `feat/<name>`.
+Feature-ветки `feat/<name>` отходят от `main`, PR открывается **сразу в `main`**.
 
-1. Создать ветку от `dev`: `git checkout dev && git checkout -b feat/my-feature`.
-2. Закоммитить изменения, запушить, открыть PR в `dev`.
+1. Создать ветку от `main`: `git checkout main && git pull && git checkout -b feat/my-feature`.
+2. Закоммитить изменения, запушить, открыть PR в `main`.
 3. PR должен пройти CI и получить минимум 1 апрув.
 4. Релиз — тег `v0.x` на `main`.
 

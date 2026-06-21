@@ -34,7 +34,7 @@
 - Звук (опц.) — OGG/MP3, короткие лупы.
 
 ## Процесс разработки
-- **Git-flow lite:** `main` (стабильная) ← `dev` ← feature-ветки `feat/<name>`.
+- **Ветвление:** feature-ветки `feat/<name>` от `main`, PR открывается сразу в `main`.
 - **PR-ревью** обязательно: минимум 1 апрув, проходящий CI.
 - **Issues и доска:** GitHub Projects (kanban: Backlog → In progress → Review → Done).
 - **Релизы:** теги `v0.x` на `main`, APK прикладывается к релизу.
