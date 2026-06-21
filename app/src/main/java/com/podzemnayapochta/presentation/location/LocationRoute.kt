@@ -14,20 +14,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.podzemnayapochta.engine.SceneBuilder
+import com.podzemnayapochta.presentation.dialogue.DialogueOverlay
 import com.podzemnayapochta.presentation.game.GameUiState
 import com.podzemnayapochta.presentation.game.GameViewModel
 
 /**
  * Связывает [GameViewModel] с [LocationScreen]: строит сцену текущей локации
  * через [SceneBuilder]. Тап по выходу выполняет переход (use-case MoveTo)
- * и навигацию; тап по NPC пробрасывается наверх (диалог появится в PR диалогов).
+ * и навигацию; тап по NPC открывает диалог (оверлей поверх локации).
  */
 @Composable
 fun LocationRoute(
     locationId: String,
     viewModel: GameViewModel,
     onNavigateToLocation: (String) -> Unit,
-    onNpcTapped: (String) -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val sceneBuilder = remember { SceneBuilder() }
@@ -54,14 +54,23 @@ fun LocationRoute(
                     Text("Локация не найдена: $locationId")
                 }
             } else {
-                LocationScreen(
-                    scene = scene,
-                    onNpcTapped = onNpcTapped,
-                    onExitTapped = { targetId ->
-                        viewModel.moveTo(targetId)
-                        onNavigateToLocation(targetId)
-                    },
-                )
+                Box(Modifier.fillMaxSize()) {
+                    LocationScreen(
+                        scene = scene,
+                        onNpcTapped = viewModel::startDialogue,
+                        onExitTapped = { targetId ->
+                            viewModel.moveTo(targetId)
+                            onNavigateToLocation(targetId)
+                        },
+                    )
+                    s.dialogue?.let { dialogue ->
+                        DialogueOverlay(
+                            dialogue = dialogue,
+                            onChoice = viewModel::chooseDialogueOption,
+                            onDismiss = viewModel::endDialogue,
+                        )
+                    }
+                }
             }
         }
     }
