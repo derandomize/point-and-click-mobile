@@ -55,7 +55,7 @@ naming:
     ignoreAnnotated: ['Composable']
   TopLevelPropertyNaming:
     active: true
-    constantPattern: '[A-Z][A-Za-z0-9]*'
+    constantPattern: '[A-Z][_A-Za-z0-9]*'
 
 comments:
   active: true

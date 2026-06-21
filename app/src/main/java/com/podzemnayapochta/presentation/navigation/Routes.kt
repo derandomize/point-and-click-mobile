@@ -4,4 +4,9 @@ package com.podzemnayapochta.presentation.navigation
 object Routes {
     const val MENU = "menu"
     const val MAP = "map"
+
+    const val LOCATION_ARG = "locationId"
+    const val LOCATION = "location/{$LOCATION_ARG}"
+
+    fun location(locationId: String): String = "location/$locationId"
 }
