@@ -11,17 +11,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.podzemnayapochta.presentation.game.GameUiState
 import com.podzemnayapochta.presentation.game.GameViewModel
 
 /**
  * Связывает [GameViewModel] с [MapScreen]: подсвечивает текущую локацию,
- * а тап по соседней локации инициирует переход (use-case MoveTo).
+ * а тап по локации открывает её экран (переход выполняет вызывающий слой).
  */
 @Composable
-fun MapRoute(viewModel: GameViewModel = hiltViewModel()) {
+fun MapRoute(
+    viewModel: GameViewModel,
+    onLocationSelected: (String) -> Unit,
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     when (val s = state) {
@@ -43,7 +45,7 @@ fun MapRoute(viewModel: GameViewModel = hiltViewModel()) {
             MapScreen(
                 locations = MapLocation.placeholderCity(),
                 currentLocationId = s.gameState.currentLocationId,
-                onLocationSelected = viewModel::moveTo,
+                onLocationSelected = onLocationSelected,
             )
     }
 }
