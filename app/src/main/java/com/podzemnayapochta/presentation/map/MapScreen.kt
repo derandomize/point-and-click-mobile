@@ -55,11 +55,9 @@ fun MapScreen(
                         detectTapGestures { tap ->
                             val nx = tap.x / size.width
                             val ny = tap.y / size.height
-                            val hit = hitTester.hitTest(locations.map { it.toHitArea() }, nx, ny)
-                            if (hit != null) {
-                                selectedId = hit.id
-                                onLocationSelected(hit.id)
-                            }
+                            val id = resolveMapTap(locations, hitTester, nx, ny) ?: return@detectTapGestures
+                            selectedId = id
+                            onLocationSelected(id)
                         }
                     },
         ) {
@@ -85,6 +83,22 @@ fun MapScreen(
     }
 }
 
+private const val LOCKED_ALPHA = 0.3f
+
+/**
+ * Разрешает тап по карте в id локации, но только если она открыта
+ * ([MapLocation.unlocked]). Тап по запертой локации возвращает null.
+ */
+internal fun resolveMapTap(
+    locations: List<MapLocation>,
+    hitTester: HitTester,
+    nx: Float,
+    ny: Float,
+): String? {
+    val hit = hitTester.hitTest(locations.map { it.toHitArea() }, nx, ny) ?: return null
+    return locations.firstOrNull { it.id == hit.id && it.unlocked }?.id
+}
+
 private fun DrawScope.drawConnections(locations: List<MapLocation>) {
     val byId = locations.associateBy { it.id }
     locations.forEach { loc ->
@@ -108,13 +122,14 @@ private fun DrawScope.drawLocationNode(
     val center = Offset(location.x * size.width, location.y * size.height)
     val radius = if (selected) 42f else 32f
 
+    val accent =
+        (if (selected) LanternHoney else LanternAmber)
+            .let { if (location.unlocked) it else it.copy(alpha = LOCKED_ALPHA) }
+    val core = if (location.unlocked) LanternTeal else LanternTeal.copy(alpha = LOCKED_ALPHA)
+
     drawCircle(color = UndergroundShadow, radius = radius + 6f, center = center)
-    drawCircle(
-        color = if (selected) LanternHoney else LanternAmber,
-        radius = radius,
-        center = center,
-    )
-    drawCircle(color = LanternTeal, radius = radius / 3f, center = center)
+    drawCircle(color = accent, radius = radius, center = center)
+    drawCircle(color = core, radius = radius / 3f, center = center)
 
     val layout = textMeasurer.measure(location.title)
     drawText(
