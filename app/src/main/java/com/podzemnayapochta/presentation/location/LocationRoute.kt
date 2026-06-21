@@ -21,6 +21,7 @@ import com.podzemnayapochta.engine.SceneBuilder
 import com.podzemnayapochta.presentation.dialogue.DialogueOverlay
 import com.podzemnayapochta.presentation.game.GameUiState
 import com.podzemnayapochta.presentation.game.GameViewModel
+import com.podzemnayapochta.presentation.letters.LetterBagOverlay
 
 /**
  * Связывает [GameViewModel] с [LocationScreen]: строит сцену текущей локации
@@ -35,7 +36,6 @@ fun LocationRoute(
     onNavigateToLocation: (String) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val sceneBuilder = remember { SceneBuilder() }
     val snackbarHostState = remember { SnackbarHostState() }
 
     val feedback = (state as? GameUiState.Ready)?.deliveryFeedback
@@ -67,32 +67,56 @@ fun LocationRoute(
                         )
                     }
 
-                is GameUiState.Ready -> {
-                    val scene = remember(s.content, locationId) { sceneBuilder.build(s.content, locationId) }
-                    if (scene == null) {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("Локация не найдена: $locationId")
-                        }
-                    } else {
-                        LocationScreen(
-                            scene = scene,
-                            onNpcTapped = viewModel::startDialogue,
-                            onExitTapped = { targetId ->
-                                viewModel.moveTo(targetId)
-                                onNavigateToLocation(targetId)
-                            },
-                        )
-                        s.dialogue?.let { dialogue ->
-                            DialogueOverlay(
-                                dialogue = dialogue,
-                                onChoice = viewModel::chooseDialogueOption,
-                                onDeliverLetter = viewModel::deliverToCurrentNpc,
-                                onDismiss = viewModel::endDialogue,
-                            )
-                        }
-                    }
-                }
+                is GameUiState.Ready ->
+                    ReadyLocation(
+                        ready = s,
+                        locationId = locationId,
+                        viewModel = viewModel,
+                        onNavigateToLocation = onNavigateToLocation,
+                    )
             }
         }
+    }
+}
+
+/** Содержимое экрана для готового состояния: сцена локации + оверлеи диалога и сумки. */
+@Composable
+private fun ReadyLocation(
+    ready: GameUiState.Ready,
+    locationId: String,
+    viewModel: GameViewModel,
+    onNavigateToLocation: (String) -> Unit,
+) {
+    val sceneBuilder = remember { SceneBuilder() }
+    val scene = remember(ready.content, locationId) { sceneBuilder.build(ready.content, locationId) }
+    if (scene == null) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Локация не найдена: $locationId")
+        }
+        return
+    }
+
+    LocationScreen(
+        scene = scene,
+        onNpcTapped = viewModel::startDialogue,
+        onExitTapped = { targetId ->
+            viewModel.moveTo(targetId)
+            onNavigateToLocation(targetId)
+        },
+        onOpenBag = { viewModel.setBagOpen(true) },
+    )
+    ready.dialogue?.let { dialogue ->
+        DialogueOverlay(
+            dialogue = dialogue,
+            onChoice = viewModel::chooseDialogueOption,
+            onDeliverLetter = viewModel::deliverToCurrentNpc,
+            onDismiss = viewModel::endDialogue,
+        )
+    }
+    if (ready.isBagOpen) {
+        LetterBagOverlay(
+            letters = viewModel.bagLetters(),
+            onClose = { viewModel.setBagOpen(false) },
+        )
     }
 }

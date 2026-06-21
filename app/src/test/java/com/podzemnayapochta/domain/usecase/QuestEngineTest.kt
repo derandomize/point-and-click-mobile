@@ -55,4 +55,22 @@ class QuestEngineTest {
 
         assertEquals(setOf("b", "c"), deliverable)
     }
+
+    @Test
+    fun `knownLetters исключает LOCKED и ставит недоставленные раньше доставленных`() {
+        val state =
+            TestFixtures.state(
+                letters =
+                    listOf(
+                        TestFixtures.letter(id = "a", status = LetterStatus.LOCKED),
+                        TestFixtures.letter(id = "b", status = LetterStatus.DELIVERED),
+                        TestFixtures.letter(id = "c", status = LetterStatus.RECEIVED),
+                        TestFixtures.letter(id = "d", status = LetterStatus.IN_TRANSIT),
+                    ),
+            )
+
+        val known = quests.knownLetters(state).map { it.id }
+
+        assertEquals(listOf("c", "d", "b"), known)
+    }
 }

@@ -17,6 +17,9 @@ sealed interface GameUiState {
         val content: GameContent,
         val gameState: GameState,
         val dialogue: DialogueUiState? = null,
+        /** Открыта ли «сумка» почтальона (оверлей со списком писем). */
+        val isBagOpen: Boolean = false,
+        /** Одноразовое сообщение об итоге доставки письма. */
         val deliveryFeedback: String? = null,
     ) : GameUiState
 }
