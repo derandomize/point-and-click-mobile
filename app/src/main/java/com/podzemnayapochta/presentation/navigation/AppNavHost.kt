@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.podzemnayapochta.presentation.map.MapScreen
+import com.podzemnayapochta.presentation.map.MapRoute
 import com.podzemnayapochta.presentation.menu.MenuScreen
 
 /**
@@ -18,7 +18,7 @@ fun AppNavHost() {
             MenuScreen(onStartGame = { navController.navigate(Routes.MAP) })
         }
         composable(Routes.MAP) {
-            MapScreen()
+            MapRoute()
         }
     }
 }
