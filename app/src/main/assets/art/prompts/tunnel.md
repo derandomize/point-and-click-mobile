@@ -1,20 +1,16 @@
-# Заброшенный тоннель — `art/tunnel/bg.png`
+# Abandoned Tunnel — `art/tunnel/bg.png`
 
-## Сцена
+## Prompt
 
-> ...abandoned underground service tunnel, cracked brick arch, dripping water,
-> a string of dim flickering bulbs, old rails on the floor, faint mist.
+> Hand-painted 2D illustration, point-and-click adventure game background, cozy and slightly melancholic underground town. Soft warm lantern light (amber, honey, teal glow) against deep cool shadows (dark brown, burgundy, dusty violet). Visible imperfect ink linework, painterly textures, subtle paper grain. Static diorama composition with clear foreground, midground and background layers, flat soft lighting, no harsh shadows. Inspired by Machinarium, Botanicula, Night in the Woods, Studio Ghibli backgrounds. Vertical 9:16 aspect ratio (phone screen), no characters, no text, no UI, no watermark.
+>
+> Scene: an abandoned narrow service tunnel — a cracked brick arch, collapsed masonry, dripping water on the floor, old rails fading into darkness, a sparse string of dim flickering bulbs casting faint blue-amber light, thin mist.
+>
+> Composition and clickable layout (origin at top-left, x runs left→right, y runs top→down, values are percent of frame width/height):
+> - Top band, exit to the Archive: a clear archway or passage with a hanging wooden signpost, centered at 33% width and 5–20% height. Hint of dusty shelves beyond it.
+> - Top band, exit to the Old Elevator: a clear archway or passage with a signpost, centered at 67% width and 5–20% height. Hint of a rusty iron shaft beyond it.
+> - Lower-center area around 50% width, 55–90% height: keep it open and uncluttered (no large foreground objects) — the Lamplighter character is composited here at runtime.
 
-Применять глобальный промпт стиля и негативные подсказки из `README.md`.
-Вертикальный кадр 9:16, без персонажей и без UI.
+## Negative prompt
 
-## Раскладка кликабельных зон
-
-| Объект | Тип | x | y |
-| --- | --- | --- | --- |
-| Выход «Архив» | EXIT | 23–43% (центр 33%) | 5–20% (верх) |
-| Выход «Старый лифт» | EXIT | 57–77% (центр 67%) | 5–20% (верх) |
-| Фонарщик | NPC | 41–59% (центр 50%) | 55–90% (низ) |
-
-- В верхней полосе: слева проход к архиву, справа — к старому лифту.
-- Центр нижней полосы держи свободным под фигуру фонарщика.
+> 3d render, photorealistic, anime, cel shading, sharp digital lines, neon, sci-fi, blood, gore, modern technology, text, watermark, logo.
