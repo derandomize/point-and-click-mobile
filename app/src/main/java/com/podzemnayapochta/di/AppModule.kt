@@ -2,7 +2,9 @@ package com.podzemnayapochta.di
 
 import android.content.Context
 import com.podzemnayapochta.data.repository.AssetContentRepository
+import com.podzemnayapochta.data.repository.DataStoreSaveManager
 import com.podzemnayapochta.domain.repository.ContentRepository
+import com.podzemnayapochta.domain.repository.SaveManager
 import com.podzemnayapochta.domain.usecase.DeliverLetter
 import com.podzemnayapochta.domain.usecase.DialogueEngine
 import com.podzemnayapochta.domain.usecase.MoveTo
@@ -35,6 +37,13 @@ object AppModule {
         @ApplicationContext context: Context,
         json: Json,
     ): ContentRepository = AssetContentRepository(context = context, json = json)
+
+    @Provides
+    @Singleton
+    fun provideSaveManager(
+        @ApplicationContext context: Context,
+        json: Json,
+    ): SaveManager = DataStoreSaveManager(context = context, json = json)
 
     @Provides
     fun provideDeliverLetter(): DeliverLetter = DeliverLetter()

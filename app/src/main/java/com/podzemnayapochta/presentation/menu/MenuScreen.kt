@@ -18,9 +18,14 @@ import com.podzemnayapochta.ui.theme.PodzemnayaPochtaTheme
 
 /**
  * Главное меню (см. docs/idea.md — главное меню и экран карты).
+ * «Продолжить» доступно только при наличии сохранения (см. ROADMAP, PR 6).
  */
 @Composable
-fun MenuScreen(onStartGame: () -> Unit) {
+fun MenuScreen(
+    hasSave: Boolean,
+    onContinue: () -> Unit,
+    onNewGame: () -> Unit,
+) {
     Column(
         modifier =
             Modifier
@@ -43,10 +48,20 @@ fun MenuScreen(onStartGame: () -> Unit) {
             textAlign = TextAlign.Center,
         )
         Button(
-            onClick = onStartGame,
+            onClick = onContinue,
+            enabled = hasSave,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Начать смену")
+            Text("Продолжить")
+        }
+        Button(
+            onClick = onNewGame,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+        ) {
+            Text("Новая игра")
         }
     }
 }
@@ -55,6 +70,6 @@ fun MenuScreen(onStartGame: () -> Unit) {
 @Composable
 private fun MenuScreenPreview() {
     PodzemnayaPochtaTheme {
-        MenuScreen(onStartGame = {})
+        MenuScreen(hasSave = true, onContinue = {}, onNewGame = {})
     }
 }

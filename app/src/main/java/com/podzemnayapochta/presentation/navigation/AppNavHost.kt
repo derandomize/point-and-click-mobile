@@ -1,7 +1,10 @@
 package com.podzemnayapochta.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -14,6 +17,7 @@ import com.podzemnayapochta.presentation.game.GameViewModel
 import com.podzemnayapochta.presentation.location.LocationRoute
 import com.podzemnayapochta.presentation.map.MapRoute
 import com.podzemnayapochta.presentation.menu.MenuScreen
+import com.podzemnayapochta.presentation.menu.MenuViewModel
 
 private const val GAME_GRAPH = "game_graph"
 
@@ -27,7 +31,14 @@ fun AppNavHost() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Routes.MENU) {
         composable(Routes.MENU) {
-            MenuScreen(onStartGame = { navController.navigate(GAME_GRAPH) })
+            val menuViewModel: MenuViewModel = hiltViewModel()
+            val hasSave by menuViewModel.hasSave.collectAsStateWithLifecycle()
+            LaunchedEffect(Unit) { menuViewModel.refreshHasSave() }
+            MenuScreen(
+                hasSave = hasSave,
+                onContinue = { navController.navigate(GAME_GRAPH) },
+                onNewGame = { menuViewModel.startNewGame { navController.navigate(GAME_GRAPH) } },
+            )
         }
         gameGraph(navController)
     }

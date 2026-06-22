@@ -4,12 +4,14 @@ import app.cash.turbine.test
 import com.podzemnayapochta.domain.model.DialogueChoice
 import com.podzemnayapochta.domain.model.DialogueEffect
 import com.podzemnayapochta.domain.model.DialogueNode
+import com.podzemnayapochta.domain.model.GameState
 import com.podzemnayapochta.domain.model.Letter
 import com.podzemnayapochta.domain.model.LetterStatus
 import com.podzemnayapochta.domain.model.Location
 import com.podzemnayapochta.domain.model.Npc
 import com.podzemnayapochta.domain.repository.ContentRepository
 import com.podzemnayapochta.domain.repository.GameContent
+import com.podzemnayapochta.domain.repository.SaveManager
 import com.podzemnayapochta.domain.usecase.DeliverLetter
 import com.podzemnayapochta.domain.usecase.DeliverResult
 import com.podzemnayapochta.domain.usecase.DialogueEngine
@@ -73,9 +75,30 @@ class GameViewModelTest {
             override suspend fun loadContent(): GameContent = content
         }
 
-    private fun viewModel() =
+    /** In-memory SaveManager: хранит последний сохранённый GameState. */
+    private class FakeSaveManager(
+        var saved: GameState? = null,
+    ) : SaveManager {
+        var saveCount = 0
+
+        override suspend fun save(state: GameState) {
+            saved = state
+            saveCount++
+        }
+
+        override suspend fun load(content: GameContent): GameState? = saved
+
+        override suspend fun hasSave(): Boolean = saved != null
+
+        override suspend fun clear() {
+            saved = null
+        }
+    }
+
+    private fun viewModel(saveManager: SaveManager = FakeSaveManager()) =
         GameViewModel(
             contentRepository = repository,
+            saveManager = saveManager,
             moveTo = MoveTo(),
             deliverLetter = DeliverLetter(),
             questEngine = QuestEngine(),
@@ -273,5 +296,50 @@ class GameViewModelTest {
             vm.consumeDeliveryFeedback()
 
             assertNull((vm.uiState.value as GameUiState.Ready).deliveryFeedback)
+        }
+
+    @Test
+    fun `сохранённое состояние восстанавливается при старте`() =
+        runTest(dispatcher) {
+            val savedState =
+                GameState(
+                    currentLocationId = "market",
+                    letters =
+                        mapOf(
+                            "l1" to
+                                Letter(
+                                    "l1",
+                                    "Письмо",
+                                    "Текст",
+                                    recipientNpcId = "npc-pm",
+                                    reward = 10,
+                                    status = LetterStatus.DELIVERED,
+                                ),
+                        ),
+                    score = 99,
+                    unlockedLocationIds = setOf("post-office", "market"),
+                )
+            val vm = viewModel(FakeSaveManager(saved = savedState))
+            advanceUntilIdle()
+
+            val state = assertIs<GameUiState.Ready>(vm.uiState.value)
+            assertEquals("market", state.gameState.currentLocationId)
+            assertEquals(99, state.gameState.score)
+            assertEquals(LetterStatus.DELIVERED, state.gameState.letter("l1")?.status)
+        }
+
+    @Test
+    fun `изменение состояния автоматически сохраняется`() =
+        runTest(dispatcher) {
+            val saveManager = FakeSaveManager()
+            val vm = viewModel(saveManager)
+            advanceUntilIdle()
+            vm.startDialogue("npc-pm")
+
+            vm.deliverToCurrentNpc()
+            advanceUntilIdle()
+
+            assertEquals(LetterStatus.DELIVERED, saveManager.saved?.letter("l1")?.status)
+            assertTrue(saveManager.saveCount > 0)
         }
 }
