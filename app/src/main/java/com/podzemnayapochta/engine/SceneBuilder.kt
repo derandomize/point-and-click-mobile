@@ -64,6 +64,7 @@ class SceneBuilder {
                         bottom = NPC_BOTTOM,
                         payload = npc.id,
                     ),
+                imageAsset = npc.portraitAsset,
             )
         }
     }

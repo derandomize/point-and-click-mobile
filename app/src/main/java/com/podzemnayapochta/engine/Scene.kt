@@ -21,6 +21,8 @@ data class SceneObject(
     val kind: SceneObjectKind,
     val label: String,
     val area: HitArea,
+    /** Путь к ассету-изображению объекта (например, портрет NPC), если есть. */
+    val imageAsset: String? = null,
 ) {
     /** Полезная нагрузка области: id NPC / id локации перехода. */
     val payload: String? get() = area.payload
