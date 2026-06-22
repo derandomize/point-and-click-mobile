@@ -8,6 +8,7 @@ import com.podzemnayapochta.domain.model.Letter
 import com.podzemnayapochta.domain.model.LetterStatus
 import com.podzemnayapochta.domain.repository.ContentRepository
 import com.podzemnayapochta.domain.repository.GameContent
+import com.podzemnayapochta.domain.repository.SaveManager
 import com.podzemnayapochta.domain.usecase.DeliverLetter
 import com.podzemnayapochta.domain.usecase.DeliverResult
 import com.podzemnayapochta.domain.usecase.DialogueEngine
@@ -18,6 +19,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,6 +35,7 @@ class GameViewModel
     @Inject
     constructor(
         private val contentRepository: ContentRepository,
+        private val saveManager: SaveManager,
         private val moveTo: MoveTo,
         private val deliverLetter: DeliverLetter,
         private val questEngine: QuestEngine,
@@ -42,13 +46,23 @@ class GameViewModel
 
         init {
             loadGame()
+            // Автосейв: любое изменение GameState асинхронно пишется в SaveManager.
+            viewModelScope.launch {
+                uiState
+                    .mapNotNull { (it as? GameUiState.Ready)?.gameState }
+                    .distinctUntilChanged()
+                    .collect { state -> saveManager.save(state) }
+            }
         }
 
         fun loadGame() {
             _uiState.value = GameUiState.Loading
             viewModelScope.launch {
-                runCatching { contentRepository.loadContent() }
-                    .onSuccess { content -> _uiState.value = GameUiState.Ready(content, initialState(content)) }
+                runCatching {
+                    val content = contentRepository.loadContent()
+                    val state = saveManager.load(content) ?: initialState(content)
+                    content to state
+                }.onSuccess { (content, state) -> _uiState.value = GameUiState.Ready(content, state) }
                     .onFailure { error ->
                         _uiState.value = GameUiState.Error(error.message ?: "Не удалось загрузить контент")
                     }
