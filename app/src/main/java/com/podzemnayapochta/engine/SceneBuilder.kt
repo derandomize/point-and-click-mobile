@@ -13,17 +13,35 @@ class SceneBuilder {
     fun build(
         content: GameContent,
         locationId: String,
+        includeFinaleHotspot: Boolean = false,
     ): Scene? {
         val location = content.location(locationId) ?: return null
         val npcObjects = buildNpcObjects(content, location)
         val exitObjects = buildExitObjects(content, location)
+        val hotspots = if (includeFinaleHotspot) listOf(finaleHotspot()) else emptyList()
         return Scene(
             locationId = location.id,
             title = location.title,
             backgroundAsset = location.backgroundAsset,
-            objects = npcObjects + exitObjects,
+            objects = npcObjects + exitObjects + hotspots,
         )
     }
+
+    /** Сюжетная точка интереса по центру сцены (например, рычаг лифта в финале). */
+    private fun finaleHotspot(): SceneObject =
+        SceneObject(
+            kind = SceneObjectKind.HOTSPOT,
+            label = "Лифт наверх",
+            area =
+                HitArea(
+                    id = HOTSPOT_FINALE_ID,
+                    left = 0.5f - HOTSPOT_HALF_W,
+                    top = HOTSPOT_TOP,
+                    right = 0.5f + HOTSPOT_HALF_W,
+                    bottom = HOTSPOT_BOTTOM,
+                    payload = HOTSPOT_FINALE_PAYLOAD,
+                ),
+        )
 
     private fun buildNpcObjects(
         content: GameContent,
@@ -76,6 +94,12 @@ class SceneBuilder {
     }
 
     companion object {
+        /** Id hit-области финального интерактива. */
+        const val HOTSPOT_FINALE_ID = "hotspot:finale"
+
+        /** Полезная нагрузка финального интерактива (см. LocationScreen). */
+        const val HOTSPOT_FINALE_PAYLOAD = "finale"
+
         private const val NPC_HALF_W = 0.09f
         private const val NPC_TOP = 0.55f
         private const val NPC_BOTTOM = 0.9f
@@ -83,5 +107,9 @@ class SceneBuilder {
         private const val EXIT_HALF_W = 0.1f
         private const val EXIT_TOP = 0.05f
         private const val EXIT_BOTTOM = 0.2f
+
+        private const val HOTSPOT_HALF_W = 0.18f
+        private const val HOTSPOT_TOP = 0.32f
+        private const val HOTSPOT_BOTTOM = 0.48f
     }
 }

@@ -3,6 +3,7 @@ package com.podzemnayapochta.presentation.game
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.podzemnayapochta.domain.model.DialogueChoice
+import com.podzemnayapochta.domain.model.Ending
 import com.podzemnayapochta.domain.model.GameState
 import com.podzemnayapochta.domain.model.Letter
 import com.podzemnayapochta.domain.model.LetterStatus
@@ -12,6 +13,7 @@ import com.podzemnayapochta.domain.repository.SaveManager
 import com.podzemnayapochta.domain.usecase.DeliverLetter
 import com.podzemnayapochta.domain.usecase.DeliverResult
 import com.podzemnayapochta.domain.usecase.DialogueEngine
+import com.podzemnayapochta.domain.usecase.ElevatorFinale
 import com.podzemnayapochta.domain.usecase.MoveResult
 import com.podzemnayapochta.domain.usecase.MoveTo
 import com.podzemnayapochta.domain.usecase.QuestEngine
@@ -31,6 +33,7 @@ import javax.inject.Inject
  * Input → ViewModel → UseCase → GameState → State flow → UI).
  */
 @HiltViewModel
+@Suppress("TooManyFunctions") // Центральный оркестратор игры: много мелких делегирующих входных точек для UI.
 class GameViewModel
     @Inject
     constructor(
@@ -40,6 +43,7 @@ class GameViewModel
         private val deliverLetter: DeliverLetter,
         private val questEngine: QuestEngine,
         private val dialogueEngine: DialogueEngine,
+        private val elevatorFinale: ElevatorFinale,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow<GameUiState>(GameUiState.Loading)
         val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
@@ -185,6 +189,46 @@ class GameViewModel
             val ready = _uiState.value as? GameUiState.Ready ?: return
             if (ready.deliveryFeedback != null) {
                 _uiState.update { ready.copy(deliveryFeedback = null) }
+            }
+        }
+
+        /** Доступен ли финал у лифта в текущем состоянии (для отрисовки интерактива). */
+        fun isFinaleAvailable(): Boolean {
+            val ready = _uiState.value as? GameUiState.Ready ?: return false
+            return elevatorFinale.isAvailable(ready.gameState)
+        }
+
+        /** Открыть оверлей финального выбора (по тапу на интерактив лифта). */
+        fun openFinale() {
+            val ready = _uiState.value as? GameUiState.Ready ?: return
+            if (elevatorFinale.isAvailable(ready.gameState)) {
+                _uiState.update { ready.copy(showFinale = true) }
+            }
+        }
+
+        /** Закрыть оверлей финала без выбора. */
+        fun dismissFinale() {
+            val ready = _uiState.value as? GameUiState.Ready ?: return
+            _uiState.update { ready.copy(showFinale = false) }
+        }
+
+        /** Применить выбор концовки и запросить переход на экран концовки. */
+        fun chooseEnding(ending: Ending) {
+            val ready = _uiState.value as? GameUiState.Ready ?: return
+            _uiState.update {
+                ready.copy(
+                    gameState = elevatorFinale.choose(ready.gameState, ending),
+                    showFinale = false,
+                    pendingEnding = ending,
+                )
+            }
+        }
+
+        /** Сбросить одноразовый сигнал навигации на концовку (после перехода). */
+        fun consumePendingEnding() {
+            val ready = _uiState.value as? GameUiState.Ready ?: return
+            if (ready.pendingEnding != null) {
+                _uiState.update { ready.copy(pendingEnding = null) }
             }
         }
 

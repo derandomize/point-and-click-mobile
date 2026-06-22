@@ -1,5 +1,6 @@
 package com.podzemnayapochta.presentation.game
 
+import com.podzemnayapochta.domain.model.Ending
 import com.podzemnayapochta.domain.model.GameState
 import com.podzemnayapochta.domain.repository.GameContent
 
@@ -21,5 +22,9 @@ sealed interface GameUiState {
         val isBagOpen: Boolean = false,
         /** Одноразовое сообщение об итоге доставки письма. */
         val deliveryFeedback: String? = null,
+        /** Открыт ли оверлей финального выбора у лифта. */
+        val showFinale: Boolean = false,
+        /** Одноразовый сигнал навигации на экран выбранной концовки. */
+        val pendingEnding: Ending? = null,
     ) : GameUiState
 }

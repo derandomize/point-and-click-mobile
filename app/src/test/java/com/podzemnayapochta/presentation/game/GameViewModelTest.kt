@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.podzemnayapochta.domain.model.DialogueChoice
 import com.podzemnayapochta.domain.model.DialogueEffect
 import com.podzemnayapochta.domain.model.DialogueNode
+import com.podzemnayapochta.domain.model.Ending
 import com.podzemnayapochta.domain.model.GameState
 import com.podzemnayapochta.domain.model.Letter
 import com.podzemnayapochta.domain.model.LetterStatus
@@ -15,6 +16,7 @@ import com.podzemnayapochta.domain.repository.SaveManager
 import com.podzemnayapochta.domain.usecase.DeliverLetter
 import com.podzemnayapochta.domain.usecase.DeliverResult
 import com.podzemnayapochta.domain.usecase.DialogueEngine
+import com.podzemnayapochta.domain.usecase.ElevatorFinale
 import com.podzemnayapochta.domain.usecase.MoveTo
 import com.podzemnayapochta.domain.usecase.QuestEngine
 import kotlinx.coroutines.Dispatchers
@@ -95,14 +97,37 @@ class GameViewModelTest {
         }
     }
 
-    private fun viewModel(saveManager: SaveManager = FakeSaveManager()) =
-        GameViewModel(
-            contentRepository = repository,
-            saveManager = saveManager,
-            moveTo = MoveTo(),
-            deliverLetter = DeliverLetter(),
-            questEngine = QuestEngine(),
-            dialogueEngine = DialogueEngine(),
+    private fun viewModel(
+        saveManager: SaveManager = FakeSaveManager(),
+        elevatorFinale: ElevatorFinale = ElevatorFinale(),
+    ) = GameViewModel(
+        contentRepository = repository,
+        saveManager = saveManager,
+        moveTo = MoveTo(),
+        deliverLetter = DeliverLetter(),
+        questEngine = QuestEngine(),
+        dialogueEngine = DialogueEngine(),
+        elevatorFinale = elevatorFinale,
+    )
+
+    /** Сохранённое состояние, где финал уже доступен (слух + одна доставка). */
+    private fun finaleReadyState() =
+        GameState(
+            currentLocationId = "post-office",
+            letters =
+                mapOf(
+                    "l1" to
+                        Letter(
+                            "l1",
+                            "Письмо",
+                            "Текст",
+                            recipientNpcId = "npc-pm",
+                            reward = 10,
+                            status = LetterStatus.DELIVERED,
+                        ),
+                ),
+            flags = mapOf(ElevatorFinale.FLAG_RUMOR to true),
+            unlockedLocationIds = setOf("post-office"),
         )
 
     @BeforeEach
@@ -341,5 +366,45 @@ class GameViewModelTest {
 
             assertEquals(LetterStatus.DELIVERED, saveManager.saved?.letter("l1")?.status)
             assertTrue(saveManager.saveCount > 0)
+        }
+
+    @Test
+    fun `финал недоступен без выполненных условий`() =
+        runTest(dispatcher) {
+            val vm = viewModel()
+            advanceUntilIdle()
+
+            assertFalse(vm.isFinaleAvailable())
+            vm.openFinale()
+            assertFalse((vm.uiState.value as GameUiState.Ready).showFinale)
+        }
+
+    @Test
+    fun `openFinale открывает оверлей, когда финал доступен`() =
+        runTest(dispatcher) {
+            val vm = viewModel(FakeSaveManager(saved = finaleReadyState()), ElevatorFinale(requiredDeliveries = 1))
+            advanceUntilIdle()
+
+            assertTrue(vm.isFinaleAvailable())
+            vm.openFinale()
+
+            assertTrue((vm.uiState.value as GameUiState.Ready).showFinale)
+        }
+
+    @Test
+    fun `chooseEnding завершает игру и запрашивает переход на концовку`() =
+        runTest(dispatcher) {
+            val vm = viewModel(FakeSaveManager(saved = finaleReadyState()), ElevatorFinale(requiredDeliveries = 1))
+            advanceUntilIdle()
+            vm.openFinale()
+
+            vm.chooseEnding(Ending.OPEN_PATH)
+
+            val state = assertIs<GameUiState.Ready>(vm.uiState.value)
+            assertEquals(Ending.OPEN_PATH, state.pendingEnding)
+            assertFalse(state.showFinale)
+            assertTrue(state.gameState.flag(ElevatorFinale.FLAG_FINISHED))
+            assertTrue(state.gameState.flag(Ending.OPEN_PATH.flag))
+            assertFalse(vm.isFinaleAvailable())
         }
 }
