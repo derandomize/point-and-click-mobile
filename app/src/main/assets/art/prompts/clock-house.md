@@ -1,20 +1,16 @@
-# Дом часовщика — `art/clock-house/bg.png`
+# Clockmaker's House — `art/clock-house/bg.png`
 
-## Сцена
+## Prompt
 
-> ...clockmaker's workshop deep underground, giant gears and pendulums on the
-> walls, dozens of ticking clocks, brass tools, warm amber work lamp.
+> Hand-painted 2D illustration, point-and-click adventure game background, cozy and slightly melancholic underground town. Soft warm lantern light (amber, honey, teal glow) against deep cool shadows (dark brown, burgundy, dusty violet). Visible imperfect ink linework, painterly textures, subtle paper grain. Static diorama composition with clear foreground, midground and background layers, flat soft lighting, no harsh shadows. Inspired by Machinarium, Botanicula, Night in the Woods, Studio Ghibli backgrounds. Vertical 9:16 aspect ratio (phone screen), no characters, no text, no UI, no watermark.
+>
+> Scene: a cluttered clockmaker's workshop deep underground — walls covered in clocks and exposed brass gears, swinging pendulums, magnifying lenses on stands, tools on a bench, a warm amber desk lamp.
+>
+> Composition and clickable layout (origin at top-left, x runs left→right, y runs top→down, values are percent of frame width/height):
+> - Top band, exit to the Post Office: a clear archway or passage with a hanging wooden signpost, centered at 33% width and 5–20% height. Hint of brass mail tubes beyond it.
+> - Top band, exit to the Old Elevator: a clear archway or passage with a signpost, centered at 67% width and 5–20% height. Hint of a rusty iron shaft beyond it.
+> - Lower-center area around 50% width, 55–90% height: keep it open and uncluttered (no large foreground objects) — the Clockmaker character is composited here at runtime.
 
-Применять глобальный промпт стиля и негативные подсказки из `README.md`.
-Вертикальный кадр 9:16, без персонажей и без UI.
+## Negative prompt
 
-## Раскладка кликабельных зон
-
-| Объект | Тип | x | y |
-| --- | --- | --- | --- |
-| Выход «Почтовая станция» | EXIT | 23–43% (центр 33%) | 5–20% (верх) |
-| Выход «Старый лифт» | EXIT | 57–77% (центр 67%) | 5–20% (верх) |
-| Часовщик | NPC | 41–59% (центр 50%) | 55–90% (низ) |
-
-- В верхней полосе: слева проход к почтовой станции, справа — к старому лифту.
-- Центр нижней полосы держи свободным под фигуру часовщика.
+> 3d render, photorealistic, anime, cel shading, sharp digital lines, neon, sci-fi, blood, gore, modern technology, text, watermark, logo.
