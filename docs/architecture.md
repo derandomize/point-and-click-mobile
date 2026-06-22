@@ -40,6 +40,256 @@
 > Use-case `ElevatorFinale` открывает финал у локации `old-elevator` при
 > собранных условиях и ведёт к одной из двух концовок (`Ending`).
 
+## Диаграммы классов
+
+Диаграммы отражают фактический код (`app/src/main/java/com/podzemnayapochta`).
+
+### Доменные модели и контент
+
+Иммутабельные модели предметной области и загруженный контент игры.
+
+```mermaid
+classDiagram
+    class GameContent {
+        +String startLocationId
+        +List~Location~ locations
+        +List~Npc~ npcs
+        +List~Letter~ letters
+        +List~DialogueNode~ dialogues
+        +location(id) Location?
+        +npc(id) Npc?
+        +dialogue(id) DialogueNode?
+    }
+    class GameState {
+        +String currentLocationId
+        +Map~String, Letter~ letters
+        +Map~String, Boolean~ flags
+        +int score
+        +Set~String~ unlockedLocationIds
+        +deliveredCount int
+        +flag(name) Boolean
+    }
+    class Letter {
+        +String id
+        +String title
+        +String body
+        +String recipientNpcId
+        +List~String~ hints
+        +int reward
+        +LetterStatus status
+        +isDelivered Boolean
+    }
+    class LetterStatus {
+        <<enumeration>>
+        LOCKED
+        RECEIVED
+        IN_TRANSIT
+        DELIVERED
+    }
+    class Location {
+        +String id
+        +String title
+        +String description
+        +String backgroundAsset
+        +List~String~ connectedLocationIds
+        +List~String~ npcIds
+    }
+    class Npc {
+        +String id
+        +String name
+        +String portraitAsset
+        +String locationId
+        +String? dialogueRootId
+    }
+    class DialogueNode {
+        +String id
+        +String? speakerNpcId
+        +String text
+        +List~DialogueChoice~ choices
+        +isTerminal Boolean
+    }
+    class DialogueChoice {
+        +String text
+        +String? targetNodeId
+        +List~DialogueEffect~ effects
+    }
+    class DialogueCondition {
+        +String flag
+        +Boolean expectedValue
+    }
+    class DialogueEffect {
+        +String flag
+        +Boolean value
+    }
+    class Ending {
+        <<enumeration>>
+        OPEN_PATH
+        KEEP_SECRET
+        +String flag
+    }
+
+    GameContent o-- "*" Location
+    GameContent o-- "*" Npc
+    GameContent o-- "*" Letter
+    GameContent o-- "*" DialogueNode
+    GameState o-- "*" Letter
+    Letter --> LetterStatus
+    DialogueNode o-- "*" DialogueChoice
+    DialogueChoice o-- "0..1" DialogueCondition
+    DialogueChoice o-- "*" DialogueEffect
+```
+
+### Use-case-ы и репозитории
+
+Игровая логика — чистые классы над `GameState`; источники данных скрыты за
+интерфейсами `domain.repository`.
+
+```mermaid
+classDiagram
+    class ContentRepository {
+        <<interface>>
+        +loadContent() GameContent
+    }
+    class AssetContentRepository
+    class SaveManager {
+        <<interface>>
+        +save(GameState)
+        +load(GameContent) GameState?
+        +hasSave() Boolean
+        +clear()
+    }
+    class DataStoreSaveManager
+
+    class MoveTo {
+        +invoke(GameState, Location, targetId) MoveResult
+    }
+    class DeliverLetter {
+        +invoke(GameState, letterId, recipientNpcId) DeliverResult
+    }
+    class QuestEngine {
+        +receiveLetter(GameState, letterId) GameState
+        +markCarriedInTransit(GameState) GameState
+        +deliverableLetters(GameState) List~Letter~
+        +knownLetters(GameState) List~Letter~
+    }
+    class DialogueEngine {
+        +availableChoices(choices, GameState) List~DialogueChoice~
+        +applyChoice(GameState, DialogueChoice) GameState
+    }
+    class ElevatorFinale {
+        +int requiredDeliveries
+        +isAvailable(GameState) Boolean
+        +isFinished(GameState) Boolean
+        +choose(GameState, Ending) GameState
+    }
+    class MoveResult {
+        <<sealed>>
+        Success
+        NotConnected
+        SameLocation
+    }
+    class DeliverResult {
+        <<sealed>>
+        Success
+        LetterNotFound
+        AlreadyDelivered
+        WrongRecipient
+    }
+
+    ContentRepository <|.. AssetContentRepository
+    SaveManager <|.. DataStoreSaveManager
+    AssetContentRepository ..> GameContent
+    DataStoreSaveManager ..> GameState
+    MoveTo ..> MoveResult
+    DeliverLetter ..> DeliverResult
+    ElevatorFinale ..> Ending
+```
+
+### Presentation и engine
+
+`GameViewModel` оркеструет use-case-ы и публикует `GameUiState`; engine строит
+сцены и карту из контента.
+
+```mermaid
+classDiagram
+    class GameViewModel {
+        +StateFlow~GameUiState~ uiState
+        +moveTo(targetId)
+        +startDialogue(npcId)
+        +deliverToCurrentNpc()
+        +openFinale()
+        +chooseEnding(Ending)
+    }
+    class GameUiState {
+        <<sealed>>
+    }
+    class Loading
+    class Error {
+        +String message
+    }
+    class Ready {
+        +GameContent content
+        +GameState gameState
+        +DialogueUiState? dialogue
+        +Boolean isBagOpen
+        +Boolean showFinale
+        +Ending? pendingEnding
+    }
+
+    class SceneBuilder {
+        +build(GameContent, locationId, includeFinaleHotspot) Scene?
+    }
+    class Scene {
+        +String locationId
+        +String title
+        +String backgroundAsset
+        +List~SceneObject~ objects
+    }
+    class SceneObject {
+        +SceneObjectKind kind
+        +String label
+        +HitArea area
+        +String? imageAsset
+    }
+    class SceneObjectKind {
+        <<enumeration>>
+        NPC
+        EXIT
+        HOTSPOT
+    }
+    class HitArea {
+        +String id
+        +float left
+        +float top
+        +float right
+        +float bottom
+        +contains(x, y) Boolean
+    }
+    class HitTester {
+        +hitTest(areas, x, y) HitArea?
+    }
+    class MapBuilder {
+        +build(GameContent, unlocked) List~MapLocation~
+    }
+
+    GameUiState <|-- Loading
+    GameUiState <|-- Error
+    GameUiState <|-- Ready
+    GameViewModel --> GameUiState
+    GameViewModel ..> ContentRepository
+    GameViewModel ..> SaveManager
+    GameViewModel ..> MoveTo
+    GameViewModel ..> DeliverLetter
+    GameViewModel ..> QuestEngine
+    GameViewModel ..> DialogueEngine
+    GameViewModel ..> ElevatorFinale
+    SceneBuilder ..> Scene
+    Scene o-- "*" SceneObject
+    SceneObject o-- "1" HitArea
+    SceneObject --> SceneObjectKind
+    HitTester ..> HitArea
+```
+
 ## Поток управления
 `Input (tap) → ViewModel → UseCase → GameState update → State flow → UI redraw`.
 
