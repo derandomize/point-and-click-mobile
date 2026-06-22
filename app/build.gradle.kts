@@ -129,6 +129,7 @@ val lintContent =
             val locationIds = locations.map { it["id"] as String }
             val npcIds = npcs.map { it["id"] as String }
             val dialogueIds = dialogues.map { it["id"] as String }
+            val npcDialogueRoot = npcs.associate { (it["id"] as String) to (it["dialogueRootId"] as? String) }
 
             fun checkUnique(
                 name: String,
@@ -174,8 +175,20 @@ val lintContent =
             letters.forEach { letter ->
                 val id = letter["id"]
                 val recipient = letter["recipientNpcId"] as? String
-                if (recipient !in npcIds) errors += "Письмо '$id' адресовано несуществующему NPC '$recipient'"
+                if (recipient !in npcIds) {
+                    errors += "Письмо '$id' адресовано несуществующему NPC '$recipient'"
+                } else if (npcDialogueRoot[recipient] == null) {
+                    errors += "Письмо '$id' адресовано NPC '$recipient' без диалога (dialogueRootId) — вручить нельзя"
+                }
             }
+
+            // Все флаги, которые когда-либо выставляются эффектами диалогов.
+            val producedFlags =
+                dialogues
+                    .flatMap { (it["choices"] as? List<Map<String, Any?>>).orEmpty() }
+                    .flatMap { (it["effects"] as? List<Map<String, Any?>>).orEmpty() }
+                    .mapNotNull { it["flag"] as? String }
+                    .toSet()
 
             dialogues.forEach { node ->
                 val id = node["id"]
@@ -183,6 +196,10 @@ val lintContent =
                     val target = choice["targetNodeId"] as? String
                     if (target != null && target !in dialogueIds) {
                         errors += "Диалог '$id' ведёт в несуществующий узел '$target'"
+                    }
+                    val condFlag = (choice["condition"] as? Map<String, Any?>)?.get("flag") as? String
+                    if (condFlag != null && condFlag !in producedFlags) {
+                        errors += "Диалог '$id' проверяет флаг '$condFlag', который не выставляется ни одним effects"
                     }
                 }
             }
