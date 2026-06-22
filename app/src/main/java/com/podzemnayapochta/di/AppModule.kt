@@ -7,6 +7,7 @@ import com.podzemnayapochta.domain.repository.ContentRepository
 import com.podzemnayapochta.domain.repository.SaveManager
 import com.podzemnayapochta.domain.usecase.DeliverLetter
 import com.podzemnayapochta.domain.usecase.DialogueEngine
+import com.podzemnayapochta.domain.usecase.ElevatorFinale
 import com.podzemnayapochta.domain.usecase.MoveTo
 import com.podzemnayapochta.domain.usecase.QuestEngine
 import dagger.Module
@@ -56,4 +57,7 @@ object AppModule {
 
     @Provides
     fun provideDialogueEngine(): DialogueEngine = DialogueEngine()
+
+    @Provides
+    fun provideElevatorFinale(): ElevatorFinale = ElevatorFinale()
 }

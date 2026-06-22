@@ -17,8 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.podzemnayapochta.domain.model.Ending
+import com.podzemnayapochta.domain.usecase.ElevatorFinale
 import com.podzemnayapochta.engine.SceneBuilder
 import com.podzemnayapochta.presentation.dialogue.DialogueOverlay
+import com.podzemnayapochta.presentation.finale.FinaleOverlay
 import com.podzemnayapochta.presentation.game.GameUiState
 import com.podzemnayapochta.presentation.game.GameViewModel
 import com.podzemnayapochta.presentation.hud.GameHud
@@ -35,6 +38,7 @@ fun LocationRoute(
     locationId: String,
     viewModel: GameViewModel,
     onNavigateToLocation: (String) -> Unit,
+    onFinish: (Ending) -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -44,6 +48,14 @@ fun LocationRoute(
         if (feedback != null) {
             snackbarHostState.showSnackbar(feedback)
             viewModel.consumeDeliveryFeedback()
+        }
+    }
+
+    val pendingEnding = (state as? GameUiState.Ready)?.pendingEnding
+    LaunchedEffect(pendingEnding) {
+        if (pendingEnding != null) {
+            onFinish(pendingEnding)
+            viewModel.consumePendingEnding()
         }
     }
 
@@ -89,7 +101,12 @@ private fun ReadyLocation(
     onNavigateToLocation: (String) -> Unit,
 ) {
     val sceneBuilder = remember { SceneBuilder() }
-    val scene = remember(ready.content, locationId) { sceneBuilder.build(ready.content, locationId) }
+    val includeFinaleHotspot =
+        locationId == ElevatorFinale.FINALE_LOCATION_ID && viewModel.isFinaleAvailable()
+    val scene =
+        remember(ready.content, locationId, includeFinaleHotspot) {
+            sceneBuilder.build(ready.content, locationId, includeFinaleHotspot)
+        }
     if (scene == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Локация не найдена: $locationId")
@@ -105,8 +122,15 @@ private fun ReadyLocation(
                 viewModel.moveTo(targetId)
                 onNavigateToLocation(targetId)
             },
+            onHotspotTapped = { viewModel.openFinale() },
             onOpenBag = { viewModel.setBagOpen(true) },
         )
+        if (ready.showFinale) {
+            FinaleOverlay(
+                onChoose = viewModel::chooseEnding,
+                onDismiss = viewModel::dismissFinale,
+            )
+        }
         ready.dialogue?.let { dialogue ->
             DialogueOverlay(
                 dialogue = dialogue,

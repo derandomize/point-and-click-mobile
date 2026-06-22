@@ -59,6 +59,22 @@ class SceneBuilderTest {
     }
 
     @Test
+    fun `по умолчанию сцена без финального интерактива`() {
+        val scene = builder.build(content, "post-office")!!
+
+        assertTrue(scene.objects.none { it.kind == SceneObjectKind.HOTSPOT })
+    }
+
+    @Test
+    fun `при includeFinaleHotspot добавляется HOTSPOT`() {
+        val scene = builder.build(content, "post-office", includeFinaleHotspot = true)!!
+
+        val hotspots = scene.objects.filter { it.kind == SceneObjectKind.HOTSPOT }
+        assertEquals(1, hotspots.size)
+        assertEquals(SceneBuilder.HOTSPOT_FINALE_PAYLOAD, hotspots.first().payload)
+    }
+
+    @Test
     fun `hit-области сцены не перекрывают NPC и выходы по вертикали`() {
         val scene = builder.build(content, "post-office")!!
         val npc = scene.objects.first { it.kind == SceneObjectKind.NPC }.area

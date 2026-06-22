@@ -44,6 +44,7 @@ fun LocationScreen(
     scene: Scene,
     onNpcTapped: (String) -> Unit = {},
     onExitTapped: (String) -> Unit = {},
+    onHotspotTapped: (String) -> Unit = {},
     onOpenBag: () -> Unit = {},
 ) {
     val hitTester = remember { HitTester() }
@@ -63,7 +64,7 @@ fun LocationScreen(
                             when (obj.kind) {
                                 SceneObjectKind.NPC -> obj.payload?.let(onNpcTapped)
                                 SceneObjectKind.EXIT -> obj.payload?.let(onExitTapped)
-                                SceneObjectKind.HOTSPOT -> Unit
+                                SceneObjectKind.HOTSPOT -> obj.payload?.let(onHotspotTapped)
                             }
                         }
                     },

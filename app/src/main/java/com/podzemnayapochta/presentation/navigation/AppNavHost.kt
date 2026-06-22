@@ -13,6 +13,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
+import com.podzemnayapochta.domain.model.Ending
+import com.podzemnayapochta.presentation.ending.EndingScreen
 import com.podzemnayapochta.presentation.game.GameViewModel
 import com.podzemnayapochta.presentation.location.LocationRoute
 import com.podzemnayapochta.presentation.map.MapRoute
@@ -41,6 +43,25 @@ fun AppNavHost() {
             )
         }
         gameGraph(navController)
+
+        composable(
+            route = Routes.ENDING,
+            arguments = listOf(navArgument(Routes.ENDING_ARG) { type = NavType.StringType }),
+        ) { entry ->
+            val endingName = entry.arguments?.getString(Routes.ENDING_ARG)
+            val ending =
+                endingName
+                    ?.let { runCatching { Ending.valueOf(it) }.getOrNull() }
+                    ?: Ending.KEEP_SECRET
+            EndingScreen(
+                ending = ending,
+                onBackToMenu = {
+                    navController.navigate(Routes.MENU) {
+                        popUpTo(Routes.MENU) { inclusive = true }
+                    }
+                },
+            )
+        }
     }
 }
 
@@ -69,6 +90,9 @@ private fun NavGraphBuilder.gameGraph(navController: NavHostController) {
                     navController.navigate(Routes.location(targetId)) {
                         popUpTo(Routes.MAP)
                     }
+                },
+                onFinish = { ending ->
+                    navController.navigate(Routes.ending(ending.name))
                 },
             )
         }
