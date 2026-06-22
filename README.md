@@ -6,6 +6,27 @@
 
 **Платформа:** Android · **Язык:** Kotlin · **Движок:** не используется (свой мини-рендер на Canvas).
 
+## Галерея
+
+<table>
+  <tr>
+    <td><img src="assets/tavern-screenshot.jpg" alt="Локация «Таверна» с двумя NPC" width="240"></td>
+    <td><img src="assets/mushroom-dialogue.jpg" alt="Диалог с грибной торговкой" width="240"></td>
+    <td><img src="assets/ending.jpg" alt="Концовка «Путь наверх открыт»" width="240"></td>
+  </tr>
+  <tr>
+    <td align="center">Локация и персонажи</td>
+    <td align="center">Диалог с выбором реплик</td>
+    <td align="center">Одна из двух концовок</td>
+  </tr>
+</table>
+
+### Запись игры на устройстве
+
+<video src="https://github.com/derandomize/point-and-click-mobile/raw/main/assets/real-android-run.mp4" controls width="320"></video>
+
+Если плеер не отображается — [скачать видео](assets/real-android-run.mp4).
+
 ## Документация
 
 Собирается с помощью [MkDocs Material](https://squidfunk.github.io/mkdocs-material/)
