@@ -31,23 +31,31 @@
       "description": "Деревянные кабинки, очаг, кружки, скрипка на стене.",
       "backgroundAsset": "art/tavern/bg.png",
       "connectedLocationIds": ["market", "archive"],
-      "npcIds": ["npc-bartender"]
+      "npcIds": ["npc-bartender", "npc-courier"]
     },
     {
       "id": "archive",
       "title": "Архив",
       "description": "Бесконечная тусклая библиотека со свитками, лестницами и пылью в лучах света.",
       "backgroundAsset": "art/archive/bg.png",
-      "connectedLocationIds": ["tavern"],
+      "connectedLocationIds": ["tavern", "tunnel"],
       "npcIds": ["npc-archivist"]
+    },
+    {
+      "id": "tunnel",
+      "title": "Заброшенный тоннель",
+      "description": "Сырой коридор с обвалившейся кладкой, редкие фонари выхватывают рельсы, уходящие во тьму.",
+      "backgroundAsset": "art/tunnel/bg.png",
+      "connectedLocationIds": ["archive", "old-elevator"],
+      "npcIds": ["npc-lamplighter"]
     },
     {
       "id": "old-elevator",
       "title": "Старый лифт",
       "description": "Огромная ржавая шахта лифта, оборванные тросы, выцветшие плакаты, одинокая лампа.",
       "backgroundAsset": "art/old-elevator/bg.png",
-      "connectedLocationIds": ["clock-house"],
-      "npcIds": []
+      "connectedLocationIds": ["clock-house", "tunnel"],
+      "npcIds": ["npc-engineer"]
     }
   ],
   "npcs": [
@@ -77,7 +85,14 @@
       "name": "Трактирщик",
       "portraitAsset": "art/npc/bartender.png",
       "locationId": "tavern",
-      "dialogueRootId": null
+      "dialogueRootId": "dlg-bartender-1"
+    },
+    {
+      "id": "npc-courier",
+      "name": "Старый курьер",
+      "portraitAsset": "art/npc/courier.png",
+      "locationId": "tavern",
+      "dialogueRootId": "dlg-courier-1"
     },
     {
       "id": "npc-archivist",
@@ -85,6 +100,20 @@
       "portraitAsset": "art/npc/archivist.png",
       "locationId": "archive",
       "dialogueRootId": "dlg-archivist-1"
+    },
+    {
+      "id": "npc-lamplighter",
+      "name": "Фонарщик",
+      "portraitAsset": "art/npc/lamplighter.png",
+      "locationId": "tunnel",
+      "dialogueRootId": "dlg-lamplighter-1"
+    },
+    {
+      "id": "npc-engineer",
+      "name": "Инженер лифта",
+      "portraitAsset": "art/npc/engineer.png",
+      "locationId": "old-elevator",
+      "dialogueRootId": "dlg-engineer-1"
     }
   ],
   "letters": [
@@ -97,12 +126,68 @@
       "reward": 10
     },
     {
+      "id": "letter-mushroom",
+      "title": "Заказ на светящиеся споры",
+      "body": "Нужна корзина самых ярких грибов к ужину. Возьму у той, чьи прилавки сами светятся.",
+      "recipientNpcId": "npc-mushroom-seller",
+      "hints": ["Адресат торгует на рынке", "У неё светятся прилавки и кипят котлы"],
+      "reward": 10
+    },
+    {
+      "id": "letter-bartender",
+      "title": "Долг за бочку",
+      "body": "Старина, верни бочку тёмного к субботе — иначе скрипка на стене заиграет реквием.",
+      "recipientNpcId": "npc-bartender",
+      "hints": ["Адресат держит очаг и кружки", "На стене у него висит скрипка"],
+      "reward": 12
+    },
+    {
       "id": "letter-archivist",
       "title": "Запрос из глубин",
       "body": "Прошу найти старую карту шахты лифта. За пыльными полками, где пахнет историей.",
       "recipientNpcId": "npc-archivist",
       "hints": ["Адресат хранит документы", "Его место — среди свитков и пыли"],
       "reward": 15
+    },
+    {
+      "id": "letter-courier",
+      "title": "Старому маршрутчику",
+      "body": "Помнишь глубокие маршруты, друг? Я снова хожу по ним. Найди меня — расскажу новости.",
+      "recipientNpcId": "npc-courier",
+      "hints": ["Адресат — почтальон на пенсии", "Коротает вечера в таверне за кружкой"],
+      "reward": 15
+    },
+    {
+      "id": "letter-lamplighter",
+      "title": "Не дай погаснуть",
+      "body": "Без твоих фонарей тоннель проглотит любого. Масла в обрез — приду помочь.",
+      "recipientNpcId": "npc-lamplighter",
+      "hints": ["Адресат следит за фонарями", "Работает в заброшенном тоннеле"],
+      "reward": 18
+    },
+    {
+      "id": "letter-engineer",
+      "title": "Чертёж подъёмника",
+      "body": "Прилагаю расчёты противовесов. Если тросы целы, шахту ещё можно оживить.",
+      "recipientNpcId": "npc-engineer",
+      "hints": ["Адресат знает механизм лифта", "Найдёшь его у самой ржавой шахты"],
+      "reward": 20
+    },
+    {
+      "id": "letter-postmaster-report",
+      "title": "Отчёт о маршрутах",
+      "body": "Все письма розданы, маршруты пройдены. Жду новых распоряжений под зелёной лампой.",
+      "recipientNpcId": "npc-postmaster",
+      "hints": ["Адресат выдаёт письма новичкам", "Сидит на почтовой станции под зелёным абажуром"],
+      "reward": 15
+    },
+    {
+      "id": "letter-elevator-secret",
+      "title": "Последний ключ",
+      "body": "Карта у тебя, расчёты тоже. Не хватает лишь решимости повернуть рычаг наверх.",
+      "recipientNpcId": "npc-engineer",
+      "hints": ["Адресат уже держал в руках чертёж лифта", "Ждёт у шахты, ведущей наверх"],
+      "reward": 25
     }
   ],
   "dialogues": [
@@ -116,6 +201,11 @@
           "targetNodeId": "dlg-postmaster-2",
           "effects": [{ "flag": "got_first_letter", "value": true }]
         },
+        {
+          "text": "Я слышал о лифте наверх…",
+          "targetNodeId": "dlg-postmaster-3",
+          "condition": { "flag": "knows_elevator_rumor", "expectedValue": true }
+        },
         { "text": "Позже.", "targetNodeId": null }
       ]
     },
@@ -126,11 +216,11 @@
       "choices": []
     },
     {
-      "id": "dlg-clockmaker-1",
-      "speakerNpcId": "npc-clockmaker",
-      "text": "Тиканье… ты принёс мне весть?",
+      "id": "dlg-postmaster-3",
+      "speakerNpcId": "npc-postmaster",
+      "text": "Лифт? Старые сказки. Но если уж копаешь — копай осторожно. Не всё наверху ждёт нас с добром.",
       "choices": [
-        { "text": "Вот письмо для вас.", "targetNodeId": null }
+        { "text": "Учту.", "targetNodeId": null }
       ]
     },
     {
@@ -138,7 +228,54 @@
       "speakerNpcId": "npc-mushroom-seller",
       "text": "Свежие светящиеся грибы! Бери, не пожалеешь.",
       "choices": [
+        { "text": "Что слышно на рынке?", "targetNodeId": "dlg-mushroom-2" },
         { "text": "Спасибо, в другой раз.", "targetNodeId": null }
+      ]
+    },
+    {
+      "id": "dlg-mushroom-2",
+      "speakerNpcId": "npc-mushroom-seller",
+      "text": "Говорят, в старом тоннеле снова зажгли фонари. Значит, кто-то ходит туда, где ходить не след.",
+      "choices": [
+        { "text": "Любопытно.", "targetNodeId": null }
+      ]
+    },
+    {
+      "id": "dlg-clockmaker-1",
+      "speakerNpcId": "npc-clockmaker",
+      "text": "Тиканье… ты принёс мне весть?",
+      "choices": [
+        { "text": "Вот письмо для вас.", "targetNodeId": null },
+        {
+          "text": "Расскажите про лифт.",
+          "targetNodeId": "dlg-clockmaker-2",
+          "condition": { "flag": "got_first_letter", "expectedValue": true }
+        }
+      ]
+    },
+    {
+      "id": "dlg-clockmaker-2",
+      "speakerNpcId": "npc-clockmaker",
+      "text": "Его шестерни больше моих кукушек. Оживить такую махину под силу лишь инженеру у самой шахты.",
+      "choices": [
+        { "text": "Спасибо.", "targetNodeId": null }
+      ]
+    },
+    {
+      "id": "dlg-bartender-1",
+      "speakerNpcId": "npc-bartender",
+      "text": "Что налить, почтальон? Или ты по делу?",
+      "choices": [
+        { "text": "Вот письмо для вас.", "targetNodeId": null },
+        { "text": "Слыхал про старые маршруты?", "targetNodeId": "dlg-bartender-2" }
+      ]
+    },
+    {
+      "id": "dlg-bartender-2",
+      "speakerNpcId": "npc-bartender",
+      "text": "Старые маршруты? Спроси вон того старика в углу — он их все исходил, пока ноги носили.",
+      "choices": [
+        { "text": "Поищу его.", "targetNodeId": null }
       ]
     },
     {
@@ -149,10 +286,86 @@
         { "text": "У меня письмо для вас.", "targetNodeId": null },
         {
           "text": "Что вы знаете о лифте наверх?",
-          "targetNodeId": null,
+          "targetNodeId": "dlg-archivist-2",
           "condition": { "flag": "got_first_letter", "expectedValue": true },
           "effects": [{ "flag": "knows_elevator_rumor", "value": true }]
         }
+      ]
+    },
+    {
+      "id": "dlg-archivist-2",
+      "speakerNpcId": "npc-archivist",
+      "text": "Вот, держи. Старая карта шахты — на ней путь через заброшенный тоннель. Береги её.",
+      "choices": [
+        {
+          "text": "Беру карту.",
+          "targetNodeId": null,
+          "effects": [{ "flag": "found_elevator_map", "value": true }]
+        }
+      ]
+    },
+    {
+      "id": "dlg-courier-1",
+      "speakerNpcId": "npc-courier",
+      "text": "Старый курьер прищуривается поверх кружки. «Новенький, значит».",
+      "choices": [
+        { "text": "Вот письмо для вас.", "targetNodeId": null },
+        {
+          "text": "Расскажите про глубокие маршруты.",
+          "targetNodeId": "dlg-courier-2",
+          "condition": { "flag": "knows_elevator_rumor", "expectedValue": true },
+          "effects": [{ "flag": "heard_old_route", "value": true }]
+        }
+      ]
+    },
+    {
+      "id": "dlg-courier-2",
+      "speakerNpcId": "npc-courier",
+      "text": "Самый глубокий путь идёт через тоннель к шахте лифта. Найди там фонарщика — он проведёт.",
+      "choices": [
+        { "text": "Спасибо, старик.", "targetNodeId": null }
+      ]
+    },
+    {
+      "id": "dlg-lamplighter-1",
+      "speakerNpcId": "npc-lamplighter",
+      "text": "Фонарщик подкручивает фитиль. «Свет здесь — единственный друг».",
+      "choices": [
+        { "text": "Вот письмо для вас.", "targetNodeId": null },
+        {
+          "text": "Куда ведёт этот тоннель?",
+          "targetNodeId": "dlg-lamplighter-2",
+          "condition": { "flag": "heard_old_route", "expectedValue": true }
+        }
+      ]
+    },
+    {
+      "id": "dlg-lamplighter-2",
+      "speakerNpcId": "npc-lamplighter",
+      "text": "Прямо к старому лифту. Там инженер всё ещё верит, что шахту можно поднять. Иди, я посвечу.",
+      "choices": [
+        { "text": "К лифту, значит.", "targetNodeId": null }
+      ]
+    },
+    {
+      "id": "dlg-engineer-1",
+      "speakerNpcId": "npc-engineer",
+      "text": "Инженер вытирает руки ветошью. «Шахта молчит уже двадцать лет».",
+      "choices": [
+        { "text": "Вот письмо для вас.", "targetNodeId": null },
+        {
+          "text": "Можно ли поднять лифт?",
+          "targetNodeId": "dlg-engineer-2",
+          "condition": { "flag": "found_elevator_map", "expectedValue": true }
+        }
+      ]
+    },
+    {
+      "id": "dlg-engineer-2",
+      "speakerNpcId": "npc-engineer",
+      "text": "С этой картой — да. Противовесы, тросы… остаётся последний рычаг. Реши сам, стоит ли будить поверхность.",
+      "choices": [
+        { "text": "Я подумаю.", "targetNodeId": null }
       ]
     }
   ]
