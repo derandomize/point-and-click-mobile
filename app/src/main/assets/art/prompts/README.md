@@ -71,4 +71,6 @@ These are already pasted into every prompt; they are listed here for reference.
 - `post-office.md`, `market.md`, `clock-house.md`, `tavern.md`, `archive.md`,
   `tunnel.md`, `old-elevator.md` — one location background each, with the
   clickable layout pinned to the SceneBuilder hit areas.
-- `npc-portraits.md` — complete portrait prompts for all 8 NPCs.
+- `npc-postmaster.md`, `npc-mushroom-seller.md`, `npc-clockmaker.md`,
+  `npc-bartender.md`, `npc-courier.md`, `npc-archivist.md`,
+  `npc-lamplighter.md`, `npc-engineer.md` — one complete portrait prompt per NPC.
