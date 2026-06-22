@@ -7,8 +7,10 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,6 +18,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -34,8 +37,10 @@ import com.podzemnayapochta.engine.HitTester
 import com.podzemnayapochta.engine.Scene
 import com.podzemnayapochta.engine.SceneObject
 import com.podzemnayapochta.engine.SceneObjectKind
+import com.podzemnayapochta.ui.theme.LanternAmber
 import com.podzemnayapochta.ui.theme.LanternHoney
 import com.podzemnayapochta.ui.theme.LanternTeal
+import com.podzemnayapochta.ui.theme.ParchmentLight
 import com.podzemnayapochta.ui.theme.UndergroundShadow
 import com.podzemnayapochta.ui.theme.UndergroundViolet
 import kotlinx.coroutines.Dispatchers
@@ -44,8 +49,9 @@ import kotlinx.coroutines.withContext
 /**
  * Экран локации — «открытка» point-and-click (см. docs/architecture.md, SceneRenderer).
  * Рендерит нарисованный фон локации и портреты NPC из ассетов; выходы и сюжетные
- * точки подсвечиваются полупрозрачными зонами поверх фона. Тап определяется через
- * [HitTester] и ведёт либо в диалог с NPC, либо в соседнюю локацию.
+ * точки помечаются компактными «табличками» поверх фона (без больших цветных
+ * плашек). Тап определяется через [HitTester] и ведёт либо в диалог с NPC,
+ * либо в соседнюю локацию.
  */
 @Composable
 fun LocationScreen(
@@ -84,15 +90,21 @@ fun LocationScreen(
             }
         }
 
-        Text(
-            text = scene.title,
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.primary,
+        Surface(
+            color = UndergroundShadow.copy(alpha = PLATE_ALPHA),
+            shape = RoundedCornerShape(12.dp),
             modifier =
                 Modifier
                     .align(Alignment.TopStart)
                     .padding(16.dp),
-        )
+        ) {
+            Text(
+                text = scene.title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            )
+        }
 
         Button(
             onClick = onOpenBag,
@@ -162,26 +174,58 @@ private fun DrawScope.drawSceneObject(
     val top = area.top * size.height
     val width = (area.right - area.left) * size.width
     val height = (area.bottom - area.top) * size.height
+    val centerX = left + width / 2f
 
-    if (obj.kind == SceneObjectKind.NPC && image != null) {
-        drawPortrait(image, centerX = left + width / 2f, bottom = top + height, areaHeight = height)
-    } else {
-        val highlight = if (obj.kind == SceneObjectKind.EXIT) LanternTeal else LanternHoney
-        drawRoundRect(
-            color = highlight.copy(alpha = HIGHLIGHT_ALPHA),
-            topLeft = Offset(left, top),
-            size = Size(width, height),
-            cornerRadius =
-                androidx.compose.ui.geometry
-                    .CornerRadius(16f, 16f),
-        )
+    when (obj.kind) {
+        SceneObjectKind.NPC -> {
+            if (image != null) {
+                drawPortrait(image, centerX = centerX, bottom = top + height, areaHeight = height)
+            } else {
+                drawRoundRect(
+                    color = LanternAmber,
+                    topLeft = Offset(left, top),
+                    size = Size(width, height),
+                    cornerRadius = CornerRadius(16f, 16f),
+                )
+            }
+            drawLabelChip(textMeasurer, obj.label, centerX, top + height + CHIP_GAP, ParchmentLight)
+        }
+
+        SceneObjectKind.EXIT ->
+            drawLabelChip(textMeasurer, "↦ ${obj.label}", centerX, top + height / 2f, LanternTeal)
+
+        SceneObjectKind.HOTSPOT -> {
+            drawCircle(
+                color = LanternHoney.copy(alpha = GLOW_ALPHA),
+                radius = minOf(width, height) / 2f,
+                center = Offset(centerX, top + height / 2f),
+            )
+            drawLabelChip(textMeasurer, obj.label, centerX, top + height + CHIP_GAP, LanternHoney)
+        }
     }
+}
 
-    val layout = textMeasurer.measure(obj.label)
+/** Полупрозрачная «табличка» с подписью, центрированная в точке (cx, cy). */
+private fun DrawScope.drawLabelChip(
+    textMeasurer: TextMeasurer,
+    text: String,
+    cx: Float,
+    cy: Float,
+    textColor: Color,
+) {
+    val layout = textMeasurer.measure(text)
+    val chipWidth = layout.size.width + CHIP_PAD_H * 2
+    val chipHeight = layout.size.height + CHIP_PAD_V * 2
+    drawRoundRect(
+        color = UndergroundShadow.copy(alpha = PLATE_ALPHA),
+        topLeft = Offset(cx - chipWidth / 2f, cy - chipHeight / 2f),
+        size = Size(chipWidth, chipHeight),
+        cornerRadius = CornerRadius(chipHeight / 2f, chipHeight / 2f),
+    )
     drawText(
         textLayoutResult = layout,
-        color = Color.White,
-        topLeft = Offset(left + (width - layout.size.width) / 2f, top + height + 6f),
+        color = textColor,
+        topLeft = Offset(cx - layout.size.width / 2f, cy - layout.size.height / 2f),
     )
 }
 
@@ -201,4 +245,8 @@ private fun DrawScope.drawPortrait(
     )
 }
 
-private const val HIGHLIGHT_ALPHA = 0.30f
+private const val PLATE_ALPHA = 0.78f
+private const val GLOW_ALPHA = 0.25f
+private const val CHIP_PAD_H = 18f
+private const val CHIP_PAD_V = 10f
+private const val CHIP_GAP = 18f

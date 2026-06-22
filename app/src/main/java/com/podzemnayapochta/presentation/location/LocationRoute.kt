@@ -152,8 +152,8 @@ private fun ReadyLocation(
                 total = ready.content.letters.size,
                 modifier =
                     Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = 12.dp),
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 24.dp),
             )
         }
     }
